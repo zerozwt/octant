@@ -46,6 +46,12 @@ func (c Config) LogLevel() swe.LogLevel {
 	}
 	return swe.LOG_INFO
 }
+func (c Config) WebAddr() string {
+	if c.LocalHost {
+		return "localhost:" + fmt.Sprint(c.Port)
+	}
+	return ":" + fmt.Sprint(c.Port)
+}
 
 var gConfig Config = Config{
 	LocalHost: true,

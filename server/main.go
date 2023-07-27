@@ -6,12 +6,15 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/zerozwt/octant/server/bridge"
 	"github.com/zerozwt/octant/server/collector"
 	"github.com/zerozwt/octant/server/db"
+	"github.com/zerozwt/octant/server/handler"
 	"github.com/zerozwt/swe"
 	clientv3 "go.etcd.io/etcd/client/v3"
 )
@@ -76,6 +79,25 @@ func main() {
 	defer collector.GetCollector().Stop()
 
 	// init api engine if needed
+	engine := InitEngine()
+	if engine != nil {
+		go engine.Serve(gConfig.WebAddr())
+		logger.Info("web app service started on %s", gConfig.WebAddr())
+	}
+
+	chStop := make(chan bool, 1)
+	go func() {
+		defer close(chStop)
+		tmp := make(chan os.Signal, 1)
+		signal.Notify(tmp, syscall.SIGINT, syscall.SIGTERM)
+		<-tmp
+		logger.Info("octant shutting down ...")
+		if engine != nil {
+			engine.Close()
+		}
+	}()
+	<-chStop
+	logger.Info("octant shutdown")
 }
 
 func InitDB() error {
@@ -162,4 +184,19 @@ func TrySetAdminPassword() error {
 	line = db.GetSysConfigDAL().EncodeAdminPassword(line)
 
 	return db.GetSysConfigDAL().SetConfig("admin_pass", line)
+}
+
+func InitEngine() *swe.Engine {
+	if !gConfig.Service.Core {
+		return nil
+	}
+
+	api := swe.NewAPIServer()
+	handler.InitAPIServer(api)
+
+	file := swe.NewFileServer(gConfig.WebDir, "/", true)
+
+	swe.CtxLogger(nil).Info("initializing web app service, root=%s", gConfig.WebDir)
+
+	return swe.NewEngine(handler.API_PREFIX, api, file)
 }
