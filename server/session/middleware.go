@@ -10,9 +10,20 @@ import (
 
 type AdminSession struct{}
 
-type StreamerSession struct{}
+type StreamerSession struct {
+	RoomID       int64
+	StreamerName string
+	AccountName  string
+	PrivateKey   string
+	PublicKey    string
+}
 
-type DDSession struct{}
+type DDSession struct {
+	UID        int64
+	UserName   string
+	PrivateKey string
+	PublicKey  string
+}
 
 const (
 	ctxAdminKey    = "ctx_o_admin"
