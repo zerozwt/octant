@@ -26,18 +26,18 @@ type SysConfigDAL struct{}
 func GetSysConfigDAL() SysConfigDAL { return SysConfigDAL{} }
 
 func (dal SysConfigDAL) GetConfig(key string) (string, error) {
-	tmp := SysConfig{}
-	err := gDB.Where("key = ?", key).First(&tmp).Error
+	tmp := []SysConfig{}
+	err := gDB.Where("key = ?", key).Find(&tmp).Error
 
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return "", err
 	}
 
-	if err != nil {
+	if err != nil || len(tmp) == 0 {
 		return "", nil
 	}
 
-	return tmp.Value, nil
+	return tmp[0].Value, nil
 }
 
 func (dal SysConfigDAL) SetConfig(key, value string) error {
