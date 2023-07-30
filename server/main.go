@@ -85,6 +85,12 @@ func main() {
 		logger.Info("web app service started on %s", gConfig.WebAddr())
 	}
 
+	// load streamers from db
+	if err := LoadStreamers(); err != nil {
+		logger.Error("load streamers from db failed: %v", err)
+		return
+	}
+
 	chStop := make(chan bool, 1)
 	go func() {
 		defer close(chStop)
@@ -199,4 +205,24 @@ func InitEngine() *swe.Engine {
 	swe.CtxLogger(nil).Info("initializing web app service, root=%s", gConfig.WebDir)
 
 	return swe.NewEngine(handler.API_PREFIX, api, file)
+}
+
+func LoadStreamers() error {
+	streamers, err := db.GetStreamerDAL().All()
+	if err != nil {
+		return err
+	}
+
+	br := bridge.GetBridge()
+	logger := swe.CtxLogger(nil)
+
+	for _, item := range streamers {
+		logger.Info("start tracking live room %d", item.RoomID)
+		if err := br.AddRoom(item.RoomID); err != nil {
+			logger.Error("track live room %d failed: %v", item.RoomID, err)
+			return err
+		}
+	}
+
+	return nil
 }
