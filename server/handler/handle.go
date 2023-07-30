@@ -36,7 +36,7 @@ func registerRawHandler(method, path string, handler swe.HandlerFunc, middleware
 		handlerMap[method] = make(map[string][]swe.HandlerFunc)
 	}
 
-	if _, ok := handlerMap[fullPath]; ok {
+	if _, ok := handlerMap[method][fullPath]; ok {
 		return
 	}
 
