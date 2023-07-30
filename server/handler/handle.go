@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"net/http"
 	"path/filepath"
 	"strconv"
 	"strings"
@@ -12,33 +13,41 @@ import (
 	"github.com/zerozwt/swe"
 )
 
-var handlerMap map[string][]swe.HandlerFunc
+var handlerMap map[string]map[string][]swe.HandlerFunc = make(map[string]map[string][]swe.HandlerFunc)
 var handlerLock sync.Mutex
 
 const (
 	API_PREFIX = "/api"
+	GET        = http.MethodGet
+	POST       = http.MethodPost
 )
 
-func registerHandler[InType, OutType any](path string, handler func(*swe.Context, *InType) (*OutType, swe.SweError), middlewares ...swe.HandlerFunc) {
-	registerRawHandler(path, swe.MakeAPIHandler(handler), middlewares...)
+func registerHandler[InType, OutType any](method, path string, handler func(*swe.Context, *InType) (*OutType, swe.SweError), middlewares ...swe.HandlerFunc) {
+	registerRawHandler(method, path, swe.MakeAPIHandler(handler), middlewares...)
 }
 
-func registerRawHandler(path string, handler swe.HandlerFunc, middlewares ...swe.HandlerFunc) {
+func registerRawHandler(method, path string, handler swe.HandlerFunc, middlewares ...swe.HandlerFunc) {
 	handlerLock.Lock()
 	defer handlerLock.Unlock()
 
 	fullPath := API_PREFIX + path
 
+	if _, ok := handlerMap[method]; !ok {
+		handlerMap[method] = make(map[string][]swe.HandlerFunc)
+	}
+
 	if _, ok := handlerMap[fullPath]; ok {
 		return
 	}
 
-	handlerMap[fullPath] = append([]swe.HandlerFunc{handler, swe.InitLogID, setLogRenderer}, middlewares...)
+	handlerMap[method][fullPath] = append([]swe.HandlerFunc{handler, swe.InitLogID, setLogRenderer}, middlewares...)
 }
 
 func InitAPIServer(server *swe.APIServer) {
-	for path, handlers := range handlerMap {
-		server.RegisterHandler(path, handlers[0], handlers[1:]...)
+	for method, set := range handlerMap {
+		for path, handlers := range set {
+			server.RegisterHandler(method, path, handlers[0], handlers[1:]...)
+		}
 	}
 }
 

@@ -111,6 +111,8 @@ github.com/zerozwt/etcdutil v1.0.0 h1:48I/F6WpQhb8GPCRMXO7RMHhZszm5YR/N//FUlgxaI
 github.com/zerozwt/etcdutil v1.0.0/go.mod h1:6fdkpT7ouJzMYiesStHjJT8wFuyMLwEo9UqkZTVG7gM=
 github.com/zerozwt/swe v1.0.6 h1:P/muPDp5sRQsuyvlc/2V5QYt8qdwiLxLGMr3DZjj52k=
 github.com/zerozwt/swe v1.0.6/go.mod h1:DJOsJsq5BB+tIXh9nnDVc87p6SOL9vJCj4YlzJ+Saoo=
+github.com/zerozwt/swe v1.0.7 h1:3EvBJIVv1BNqSf2xb9iX8sYSNhlDkvMx3pWH0lOaKmE=
+github.com/zerozwt/swe v1.0.7/go.mod h1:DJOsJsq5BB+tIXh9nnDVc87p6SOL9vJCj4YlzJ+Saoo=
 go.etcd.io/etcd/api/v3 v3.5.9 h1:4wSsluwyTbGGmyjJktOf3wFQoTBIURXHnq9n/G/JQHs=
 go.etcd.io/etcd/api/v3 v3.5.9/go.mod h1:uyAal843mC8uUVSLWz6eHa/d971iDGnCRpmKd2Z+X8k=
 go.etcd.io/etcd/client/pkg/v3 v3.5.9 h1:oidDC4+YEuSIQbsR94rY9gur91UPL6DnxDCIYd2IGsE=
