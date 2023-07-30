@@ -10,6 +10,10 @@ import (
 	"gorm.io/gorm/clause"
 )
 
+const (
+	DB_SYSCONF_ADMIN_PASS = "admin_pass"
+)
+
 type SysConfig struct {
 	Key   string `gorm:"type:string;size:1024;column:key;primaryKey"`
 	Value string `gorm:"type:string;size:1024;column:value"`

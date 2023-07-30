@@ -6,7 +6,7 @@ require (
 	github.com/glebarez/sqlite v1.8.0
 	github.com/zerozwt/BLiveDanmaku v1.0.11
 	github.com/zerozwt/etcdutil v1.0.0
-	github.com/zerozwt/swe v1.0.7
+	github.com/zerozwt/swe v1.0.8
 	go.etcd.io/etcd/client/v3 v3.5.9
 	gopkg.in/yaml.v3 v3.0.1
 	gorm.io/driver/mysql v1.5.1
