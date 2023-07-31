@@ -14,15 +14,15 @@ type StreamerSession struct {
 	RoomID       int64
 	StreamerName string
 	AccountName  string
-	PrivateKey   string
-	PublicKey    string
+	PrivateKey   []byte
+	PublicKey    []byte
 }
 
 type DDSession struct {
 	UID        int64
 	UserName   string
-	PrivateKey string
-	PublicKey  string
+	PrivateKey []byte
+	PublicKey  []byte
 }
 
 const (

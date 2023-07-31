@@ -1,11 +1,7 @@
 package db
 
 import (
-	"crypto/aes"
-	"crypto/cipher"
-	"crypto/sha256"
-	"encoding/hex"
-
+	"github.com/zerozwt/octant/server/utils"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -53,9 +49,5 @@ func (dal SysConfigDAL) SetConfig(key, value string) error {
 }
 
 func (dal SysConfigDAL) EncodeAdminPassword(pass string) string {
-	hash := sha256.Sum256([]byte(pass))
-	block, _ := aes.NewCipher(hash[:])
-	aead, _ := cipher.NewGCM(block)
-	enc := aead.Seal(nil, []byte(`123456789012`), []byte(pass), nil)
-	return hex.EncodeToString(enc)
+	return utils.EncryptByPass(pass, []byte(pass))
 }
