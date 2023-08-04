@@ -79,6 +79,6 @@ func (dal GiftDAL) Page(roomID, tsBegin, tsEnd int64, offset, limit int,
 
 func (dal GiftDAL) Infos() (ret []GiftInfo, err error) {
 	ret = []GiftInfo{}
-	err = gDB.Find(&ret).Error
+	err = gDB.Order("gift_id").Find(&ret).Error
 	return
 }
