@@ -75,3 +75,23 @@ func (dal StreamerDAL) Find(id int64) (*Streamer, error) {
 
 	return nil, err
 }
+
+func (dal StreamerDAL) FindByAccount(account string) (*Streamer, error) {
+	ret := []*Streamer{}
+
+	err := gDB.Where("account_name = ?", account).Find(&ret).Error
+
+	if len(ret) > 0 {
+		return ret[0], nil
+	}
+
+	if err == gorm.ErrRecordNotFound {
+		err = nil
+	}
+
+	return nil, err
+}
+
+func (dal StreamerDAL) UpdatePrivateKey(id int64, b64EncPriKey string) error {
+	return gDB.Exec("update t_streamer set private_key = ? where room_id = ?", b64EncPriKey, id).Error
+}
