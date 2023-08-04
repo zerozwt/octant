@@ -15,6 +15,8 @@ func init() {
 	registerHandler(POST, "/streamer/login", streamer.login)
 	registerHandler(GET, "/streamer/logout", streamer.logout, session.CheckStreamer)
 	registerHandler(POST, "/streamer/password", streamer.changePass, session.CheckStreamer)
+
+	registerHandler(POST, "/simple_search", streamer.simpleSearch, session.CheckStreamer)
 }
 
 type streamerHandler struct{}
@@ -95,4 +97,74 @@ func (ins streamerHandler) changePass(ctx *swe.Context, req *bs.AdminChangePassR
 		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
 	}
 	return &bs.Nothing{}, nil
+}
+
+func (ins streamerHandler) simpleSearch(ctx *swe.Context, req *bs.SimpleSearchReq) (*bs.PageRsp, swe.SweError) {
+	if err := req.ParseTimeRange(); err != nil {
+		return nil, swe.Error(EC_ST_BAD_TIMESTAMP, err)
+	}
+	ret := bs.PageRsp{List: []any{}}
+	st, _ := session.GetStreamerSession(ctx)
+
+	if req.IsGift() {
+		count, list, err := db.GetGiftDAL().Page(st.RoomID, req.StartTs(), req.EndTs(),
+			(req.Page-1)*req.Size, req.Size, req.Filter.UID, req.Filter.Name, req.Filter.GiftID)
+		if err != nil {
+			swe.CtxLogger(ctx).Error("query db error %v", err)
+			return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
+		}
+		ret.Count = count
+		for _, rec := range list {
+			item := bs.SimpleSearchItem{
+				UID:  rec.SenderUID,
+				Name: rec.SenderName,
+				Time: utils.TimeToCSTString(rec.SendTime),
+			}
+			item.Gift.ID = rec.GiftID
+			item.Gift.Name = rec.GiftName
+			item.Gift.Price = rec.GiftPrice
+			item.Gift.Count = rec.GiftCount
+			ret.List = append(ret.List, item)
+		}
+	} else if req.IsMember() {
+		count, list, err := db.GetMemberDal().Page(st.RoomID, req.StartTs(), req.EndTs(),
+			(req.Page-1)*req.Size, req.Size, req.Filter.UID, req.Filter.Name, req.Filter.GuardLevel)
+		if err != nil {
+			swe.CtxLogger(ctx).Error("query db error %v", err)
+			return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
+		}
+		ret.Count = count
+		for _, rec := range list {
+			item := bs.SimpleSearchItem{
+				UID:  rec.SenderUID,
+				Name: rec.SenderName,
+				Time: utils.TimeToCSTString(rec.SendTime),
+			}
+			item.Member.Level = rec.GuardLevel
+			item.Member.Count = rec.Count
+			ret.List = append(ret.List, item)
+		}
+	} else if req.IsSuperChat() {
+		count, list, err := db.GetSCDal().Page(st.RoomID, req.StartTs(), req.EndTs(),
+			(req.Page-1)*req.Size, req.Size, req.Filter.UID, req.Filter.Name, req.Filter.SuperchatContent)
+		if err != nil {
+			swe.CtxLogger(ctx).Error("query db error %v", err)
+			return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
+		}
+		ret.Count = count
+		for _, rec := range list {
+			item := bs.SimpleSearchItem{
+				UID:  rec.SenderUID,
+				Name: rec.SenderName,
+				Time: utils.TimeToCSTString(rec.SendTime),
+			}
+			item.SuperChat.Price = rec.Price
+			item.SuperChat.Content = rec.Content
+			item.SuperChat.BgColor = rec.BgColor
+			item.SuperChat.FontColor = rec.FontColor
+			ret.List = append(ret.List, item)
+		}
+	}
+
+	return &ret, nil
 }
