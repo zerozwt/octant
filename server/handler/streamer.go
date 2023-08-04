@@ -17,6 +17,7 @@ func init() {
 	registerHandler(POST, "/streamer/password", streamer.changePass, session.CheckStreamer)
 
 	registerHandler(POST, "/simple_search", streamer.simpleSearch, session.CheckStreamer)
+	registerHandler(POST, "/gifts", streamer.allGifts, session.CheckStreamer)
 }
 
 type streamerHandler struct{}
@@ -166,5 +167,22 @@ func (ins streamerHandler) simpleSearch(ctx *swe.Context, req *bs.SimpleSearchRe
 		}
 	}
 
+	return &ret, nil
+}
+
+func (ins streamerHandler) allGifts(ctx *swe.Context, req *bs.Nothing) (*bs.PageRsp, swe.SweError) {
+	ret := bs.PageRsp{List: []any{}}
+	list, err := db.GetGiftDAL().Infos()
+	if err != nil {
+		swe.CtxLogger(ctx).Error("query db error %v", err)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
+	}
+
+	for _, item := range list {
+		ret.List = append(ret.List, map[string]any{
+			"id":   item.GiftID,
+			"name": item.GiftName,
+		})
+	}
 	return &ret, nil
 }

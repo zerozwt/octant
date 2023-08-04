@@ -76,3 +76,9 @@ func (dal GiftDAL) Page(roomID, tsBegin, tsEnd int64, offset, limit int,
 
 	return count, ret, err
 }
+
+func (dal GiftDAL) Infos() (ret []GiftInfo, err error) {
+	ret = []GiftInfo{}
+	err = gDB.Find(&ret).Error
+	return
+}
