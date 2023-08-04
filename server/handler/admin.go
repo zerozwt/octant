@@ -15,7 +15,7 @@ import (
 func init() {
 	registerHandler(GET, "/admin/login", admin.checkLogin, session.CheckAdmin)
 	registerHandler(POST, "/admin/login", admin.login)
-	registerHandler(POST, "/admin/logout", admin.logout, session.CheckAdmin)
+	registerHandler(GET, "/admin/logout", admin.logout, session.CheckAdmin)
 	registerHandler(POST, "/admin/password", admin.changePass, session.CheckAdmin)
 
 	registerHandler(GET, "/admin/streamer/list", admin.streamerList, session.CheckAdmin)
