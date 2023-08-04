@@ -40,7 +40,7 @@ func registerRawHandler(method, path string, handler swe.HandlerFunc, middleware
 		return
 	}
 
-	handlerMap[method][fullPath] = append([]swe.HandlerFunc{handler, swe.InitLogID, setLogRenderer}, middlewares...)
+	handlerMap[method][fullPath] = append([]swe.HandlerFunc{handler, swe.InitLogID, setLogRenderer, requestBill}, middlewares...)
 }
 
 func InitAPIServer(server *swe.APIServer) {
@@ -49,6 +49,15 @@ func InitAPIServer(server *swe.APIServer) {
 			server.RegisterHandler(method, path, handlers[0], handlers[1:]...)
 		}
 	}
+}
+
+func requestBill(ctx *swe.Context) {
+	now := time.Now()
+	logger := swe.CtxLogger(ctx)
+	defer func() {
+		logger.Info("request path: %s process time %v", ctx.Request.URL.Path, time.Since(now))
+	}()
+	ctx.Next()
 }
 
 // -----------------------------------------------------------------
