@@ -1,5 +1,7 @@
 package db
 
+import "github.com/zerozwt/swe"
+
 type MembershipRecord struct {
 	RoomID     int64  `gorm:"index:idx_member_room_time;column:room_id"`
 	SendTime   int64  `gorm:"index:idx_member_room_time;column:send_time"`
@@ -19,7 +21,7 @@ type MemberDAL struct{}
 
 func GetMemberDal() MemberDAL { return MemberDAL{} }
 
-func (dal MemberDAL) Insert(roomID int64, ts int64, uid int64, name string, level, count int) error {
+func (dal MemberDAL) Insert(ctx *swe.Context, roomID int64, ts int64, uid int64, name string, level, count int) error {
 	item := MembershipRecord{
 		RoomID:     roomID,
 		SendTime:   ts,
@@ -28,12 +30,12 @@ func (dal MemberDAL) Insert(roomID int64, ts int64, uid int64, name string, leve
 		GuardLevel: level,
 		Count:      count,
 	}
-	return gDB.Create(&item).Error
+	return getInstance(ctx).Create(&item).Error
 }
 
-func (dal MemberDAL) Page(roomID, tsBegin, tsEnd int64, offset, limit int,
+func (dal MemberDAL) Page(ctx *swe.Context, roomID, tsBegin, tsEnd int64, offset, limit int,
 	uid int64, name string, level []int) (int, []MembershipRecord, error) {
-	tx := gDB.Table("t_member").Where("room_id = ? and (send_time between ? and ?)", roomID, tsBegin, tsEnd)
+	tx := getInstance(ctx).Table("t_member").Where("room_id = ? and (send_time between ? and ?)", roomID, tsBegin, tsEnd)
 	if uid > 0 {
 		tx = tx.Where("sender_uid = ?", uid)
 	}
@@ -45,7 +47,7 @@ func (dal MemberDAL) Page(roomID, tsBegin, tsEnd int64, offset, limit int,
 	}
 
 	count := 0
-	err := tx.Select("count(*)").Scan(&count).Error
+	err := newDBSession(ctx, tx).Select("count(*)").Scan(&count).Error
 	if err != nil {
 		return 0, nil, err
 	}

@@ -1,6 +1,7 @@
 package db
 
 import (
+	"github.com/zerozwt/swe"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -23,27 +24,27 @@ type StreamerDAL struct{}
 
 func GetStreamerDAL() StreamerDAL { return StreamerDAL{} }
 
-func (dal StreamerDAL) All() ([]Streamer, error) {
+func (dal StreamerDAL) All(ctx *swe.Context) ([]Streamer, error) {
 	var ret []Streamer
-	err := gDB.Select("room_id").Find(&ret).Error
+	err := getInstance(ctx).Select("room_id").Find(&ret).Error
 	return ret, err
 }
 
-func (dal StreamerDAL) Page(offset, limit int) (int, []Streamer, error) {
+func (dal StreamerDAL) Page(ctx *swe.Context, offset, limit int) (int, []Streamer, error) {
 	count := 0
-	err := gDB.Raw("select count(*) from t_streamer").Scan(&count).Error
+	err := getInstance(ctx).Raw("select count(*) from t_streamer").Scan(&count).Error
 
 	if err != nil {
 		return count, nil, err
 	}
 
 	var ret []Streamer
-	err = gDB.Offset(offset).Limit(limit).Order("room_id").Find(&ret).Error
+	err = getInstance(ctx).Offset(offset).Limit(limit).Order("room_id").Find(&ret).Error
 
 	return count, ret, err
 }
 
-func (dal StreamerDAL) Insert(data *Streamer, upsert bool) (int64, error) {
+func (dal StreamerDAL) Insert(ctx *swe.Context, data *Streamer, upsert bool) (int64, error) {
 	cc := clause.OnConflict{DoNothing: true}
 	if upsert {
 		cc = clause.OnConflict{
@@ -51,19 +52,19 @@ func (dal StreamerDAL) Insert(data *Streamer, upsert bool) (int64, error) {
 			DoUpdates: clause.AssignmentColumns([]string{"private_key", "public_key"}),
 		}
 	}
-	result := gDB.Clauses(cc).Create(data)
+	result := getInstance(ctx).Clauses(cc).Create(data)
 	return result.RowsAffected, result.Error
 }
 
-func (dal StreamerDAL) Delete(id int64) (int64, error) {
-	result := gDB.Where("room_id = ?", id).Delete(&Streamer{})
+func (dal StreamerDAL) Delete(ctx *swe.Context, id int64) (int64, error) {
+	result := getInstance(ctx).Where("room_id = ?", id).Delete(&Streamer{})
 	return result.RowsAffected, result.Error
 }
 
-func (dal StreamerDAL) Find(id int64) (*Streamer, error) {
+func (dal StreamerDAL) Find(ctx *swe.Context, id int64) (*Streamer, error) {
 	ret := []*Streamer{}
 
-	err := gDB.Where("room_id = ?", id).Find(&ret).Error
+	err := getInstance(ctx).Where("room_id = ?", id).Find(&ret).Error
 
 	if len(ret) > 0 {
 		return ret[0], nil
@@ -76,10 +77,10 @@ func (dal StreamerDAL) Find(id int64) (*Streamer, error) {
 	return nil, err
 }
 
-func (dal StreamerDAL) FindByAccount(account string) (*Streamer, error) {
+func (dal StreamerDAL) FindByAccount(ctx *swe.Context, account string) (*Streamer, error) {
 	ret := []*Streamer{}
 
-	err := gDB.Where("account_name = ?", account).Find(&ret).Error
+	err := getInstance(ctx).Where("account_name = ?", account).Find(&ret).Error
 
 	if len(ret) > 0 {
 		return ret[0], nil
@@ -92,6 +93,6 @@ func (dal StreamerDAL) FindByAccount(account string) (*Streamer, error) {
 	return nil, err
 }
 
-func (dal StreamerDAL) UpdatePrivateKey(id int64, b64EncPriKey string) error {
-	return gDB.Exec("update t_streamer set private_key = ? where room_id = ?", b64EncPriKey, id).Error
+func (dal StreamerDAL) UpdatePrivateKey(ctx *swe.Context, id int64, b64EncPriKey string) error {
+	return getInstance(ctx).Exec("update t_streamer set private_key = ? where room_id = ?", b64EncPriKey, id).Error
 }

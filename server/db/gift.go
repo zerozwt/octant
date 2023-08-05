@@ -1,6 +1,7 @@
 package db
 
 import (
+	"github.com/zerozwt/swe"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -36,24 +37,24 @@ type GiftDAL struct{}
 
 func GetGiftDAL() GiftDAL { return GiftDAL{} }
 
-func (dal GiftDAL) Insert(gift *GiftRecord) error {
-	return gDB.Clauses(clause.OnConflict{
+func (dal GiftDAL) Insert(ctx *swe.Context, gift *GiftRecord) error {
+	return getInstance(ctx).Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "batch_id"}},
 		DoUpdates: clause.Assignments(map[string]interface{}{"gift_count": gorm.Expr("gift_count+?", gift.GiftCount)}),
 	}).Create(gift).Error
 }
 
-func (dal GiftDAL) UpdateGiftInfo(id int64, name string, price int64) error {
-	return gDB.Clauses(clause.OnConflict{DoNothing: true}).Create(&GiftInfo{
+func (dal GiftDAL) UpdateGiftInfo(ctx *swe.Context, id int64, name string, price int64) error {
+	return getInstance(ctx).Clauses(clause.OnConflict{DoNothing: true}).Create(&GiftInfo{
 		GiftID:    id,
 		GiftName:  name,
 		GiftPrice: price,
 	}).Error
 }
 
-func (dal GiftDAL) Page(roomID, tsBegin, tsEnd int64, offset, limit int,
+func (dal GiftDAL) Page(ctx *swe.Context, roomID, tsBegin, tsEnd int64, offset, limit int,
 	uid int64, name string, giftID int64) (int, []GiftRecord, error) {
-	tx := gDB.Table("t_gift").Where("room_id = ? and (send_time between ? and ?)", roomID, tsBegin, tsEnd)
+	tx := getInstance(ctx).Table("t_gift").Where("room_id = ? and (send_time between ? and ?)", roomID, tsBegin, tsEnd)
 	if uid > 0 {
 		tx = tx.Where("sender_uid = ?", uid)
 	}
@@ -65,7 +66,7 @@ func (dal GiftDAL) Page(roomID, tsBegin, tsEnd int64, offset, limit int,
 	}
 
 	count := 0
-	err := tx.Select("count(*)").Scan(&count).Error
+	err := newDBSession(ctx, tx).Select("count(*)").Scan(&count).Error
 	if err != nil {
 		return 0, nil, err
 	}
@@ -77,8 +78,8 @@ func (dal GiftDAL) Page(roomID, tsBegin, tsEnd int64, offset, limit int,
 	return count, ret, err
 }
 
-func (dal GiftDAL) Infos() (ret []GiftInfo, err error) {
+func (dal GiftDAL) Infos(ctx *swe.Context) (ret []GiftInfo, err error) {
 	ret = []GiftInfo{}
-	err = gDB.Order("gift_id").Find(&ret).Error
+	err = getInstance(ctx).Order("gift_id").Find(&ret).Error
 	return
 }

@@ -34,7 +34,7 @@ func (ins streamerHandler) checkLogin(ctx *swe.Context, req *bs.Nothing) (*bs.St
 }
 
 func (ins streamerHandler) login(ctx *swe.Context, req *bs.StreamerLoginReq) (*bs.Nothing, swe.SweError) {
-	item, err := db.GetStreamerDAL().FindByAccount(req.Account)
+	item, err := db.GetStreamerDAL().FindByAccount(ctx, req.Account)
 	if err != nil {
 		swe.CtxLogger(ctx).Error("query db error %v", err)
 		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
@@ -75,7 +75,7 @@ func (ins streamerHandler) logout(ctx *swe.Context, req *bs.Nothing) (*bs.Nothin
 func (ins streamerHandler) changePass(ctx *swe.Context, req *bs.AdminChangePassReq) (*bs.Nothing, swe.SweError) {
 	st, _ := session.GetStreamerSession(ctx)
 
-	item, err := db.GetStreamerDAL().FindByAccount(st.AccountName)
+	item, err := db.GetStreamerDAL().FindByAccount(ctx, st.AccountName)
 	if err != nil {
 		swe.CtxLogger(ctx).Error("query db error %v", err)
 		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
@@ -93,7 +93,7 @@ func (ins streamerHandler) changePass(ctx *swe.Context, req *bs.AdminChangePassR
 	}
 
 	item.PrivateKey = utils.EncryptByPass(req.New, priKey)
-	if err := db.GetStreamerDAL().UpdatePrivateKey(item.RoomID, item.PrivateKey); err != nil {
+	if err := db.GetStreamerDAL().UpdatePrivateKey(ctx, item.RoomID, item.PrivateKey); err != nil {
 		swe.CtxLogger(ctx).Error("update db error %v", err)
 		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
 	}
@@ -108,7 +108,7 @@ func (ins streamerHandler) simpleSearch(ctx *swe.Context, req *bs.SimpleSearchRe
 	st, _ := session.GetStreamerSession(ctx)
 
 	if req.IsGift() {
-		count, list, err := db.GetGiftDAL().Page(st.RoomID, req.StartTs(), req.EndTs(),
+		count, list, err := db.GetGiftDAL().Page(ctx, st.RoomID, req.StartTs(), req.EndTs(),
 			(req.Page-1)*req.Size, req.Size, req.Filter.UID, req.Filter.Name, req.Filter.GiftID)
 		if err != nil {
 			swe.CtxLogger(ctx).Error("query db error %v", err)
@@ -128,7 +128,7 @@ func (ins streamerHandler) simpleSearch(ctx *swe.Context, req *bs.SimpleSearchRe
 			ret.List = append(ret.List, item)
 		}
 	} else if req.IsMember() {
-		count, list, err := db.GetMemberDal().Page(st.RoomID, req.StartTs(), req.EndTs(),
+		count, list, err := db.GetMemberDal().Page(ctx, st.RoomID, req.StartTs(), req.EndTs(),
 			(req.Page-1)*req.Size, req.Size, req.Filter.UID, req.Filter.Name, req.Filter.GuardLevel)
 		if err != nil {
 			swe.CtxLogger(ctx).Error("query db error %v", err)
@@ -146,7 +146,7 @@ func (ins streamerHandler) simpleSearch(ctx *swe.Context, req *bs.SimpleSearchRe
 			ret.List = append(ret.List, item)
 		}
 	} else if req.IsSuperChat() {
-		count, list, err := db.GetSCDal().Page(st.RoomID, req.StartTs(), req.EndTs(),
+		count, list, err := db.GetSCDal().Page(ctx, st.RoomID, req.StartTs(), req.EndTs(),
 			(req.Page-1)*req.Size, req.Size, req.Filter.UID, req.Filter.Name, req.Filter.SuperchatContent)
 		if err != nil {
 			swe.CtxLogger(ctx).Error("query db error %v", err)
@@ -172,7 +172,7 @@ func (ins streamerHandler) simpleSearch(ctx *swe.Context, req *bs.SimpleSearchRe
 
 func (ins streamerHandler) allGifts(ctx *swe.Context, req *bs.Nothing) (*bs.PageRsp, swe.SweError) {
 	ret := bs.PageRsp{List: []any{}}
-	list, err := db.GetGiftDAL().Infos()
+	list, err := db.GetGiftDAL().Infos(ctx)
 	if err != nil {
 		swe.CtxLogger(ctx).Error("query db error %v", err)
 		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)

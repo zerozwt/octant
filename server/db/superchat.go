@@ -1,5 +1,7 @@
 package db
 
+import "github.com/zerozwt/swe"
+
 type SuperChatRecord struct {
 	RoomID     int64  `gorm:"index:idx_sc_room_time;column:room_id"`
 	SendTime   int64  `gorm:"index:idx_sc_room_time;column:send_time"`
@@ -21,7 +23,7 @@ type SCDal struct{}
 
 func GetSCDal() SCDal { return SCDal{} }
 
-func (dal SCDal) Insert(roomID int64, ts int64, uid int64, name string, price int64, content string, bgColor, fontColor string) error {
+func (dal SCDal) Insert(ctx *swe.Context, roomID int64, ts int64, uid int64, name string, price int64, content string, bgColor, fontColor string) error {
 	sc := SuperChatRecord{
 		RoomID:     roomID,
 		SendTime:   ts,
@@ -32,12 +34,12 @@ func (dal SCDal) Insert(roomID int64, ts int64, uid int64, name string, price in
 		BgColor:    bgColor,
 		FontColor:  fontColor,
 	}
-	return gDB.Create(&sc).Error
+	return getInstance(ctx).Create(&sc).Error
 }
 
-func (dal SCDal) Page(roomID, tsBegin, tsEnd int64, offset, limit int,
+func (dal SCDal) Page(ctx *swe.Context, roomID, tsBegin, tsEnd int64, offset, limit int,
 	uid int64, name, content string) (int, []SuperChatRecord, error) {
-	tx := gDB.Table("t_super_chat").Where("room_id = ? and (send_time between ? and ?)", roomID, tsBegin, tsEnd)
+	tx := getInstance(ctx).Table("t_super_chat").Where("room_id = ? and (send_time between ? and ?)", roomID, tsBegin, tsEnd)
 	if uid > 0 {
 		tx = tx.Where("sender_uid = ?", uid)
 	}
@@ -49,7 +51,7 @@ func (dal SCDal) Page(roomID, tsBegin, tsEnd int64, offset, limit int,
 	}
 
 	count := 0
-	err := tx.Select("count(*)").Scan(&count).Error
+	err := newDBSession(ctx, tx).Select("count(*)").Scan(&count).Error
 	if err != nil {
 		return 0, nil, err
 	}

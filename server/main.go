@@ -157,7 +157,7 @@ func InitCollectorBridge() (bridge.Bridge, *clientv3.Client, error) {
 }
 
 func TrySetAdminPassword() error {
-	pass, err := db.GetSysConfigDAL().GetConfig(db.DB_SYSCONF_ADMIN_PASS)
+	pass, err := db.GetSysConfigDAL().GetConfig(nil, db.DB_SYSCONF_ADMIN_PASS)
 	if err != nil {
 		return err
 	}
@@ -189,7 +189,7 @@ func TrySetAdminPassword() error {
 
 	line = db.GetSysConfigDAL().EncodeAdminPassword(line)
 
-	return db.GetSysConfigDAL().SetConfig(db.DB_SYSCONF_ADMIN_PASS, line)
+	return db.GetSysConfigDAL().SetConfig(nil, db.DB_SYSCONF_ADMIN_PASS, line)
 }
 
 func InitEngine() *swe.Engine {
@@ -208,7 +208,7 @@ func InitEngine() *swe.Engine {
 }
 
 func LoadStreamers() error {
-	streamers, err := db.GetStreamerDAL().All()
+	streamers, err := db.GetStreamerDAL().All(nil)
 	if err != nil {
 		return err
 	}

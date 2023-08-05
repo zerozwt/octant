@@ -177,7 +177,7 @@ func (r *room) onSuperChat(client *dm.Client, cmd string, data []byte) bool {
 		return true
 	}
 
-	err := db.GetSCDal().Insert(r.id, msg.Timestamp, msg.UID, msg.User.UserName, int64(msg.Price),
+	err := db.GetSCDal().Insert(nil, r.id, msg.Timestamp, msg.UID, msg.User.UserName, int64(msg.Price),
 		msg.Message, msg.BackgroundColor, msg.MessageFontColor)
 	if err != nil {
 		swe.CtxLogger(nil).Error("insert sc to room %d failed: %v, original: %s", r.id, err, string(data))
@@ -195,7 +195,7 @@ func (r *room) onGuardBuy(client *dm.Client, cmd string, data []byte) bool {
 		return true
 	}
 
-	err := db.GetMemberDal().Insert(r.id, msg.StartTime, msg.UID, msg.UserName, msg.GuardLevel, msg.Num)
+	err := db.GetMemberDal().Insert(nil, r.id, msg.StartTime, msg.UID, msg.UserName, msg.GuardLevel, msg.Num)
 	if err != nil {
 		swe.CtxLogger(nil).Error("insert member to room %d failed: %v, original: %s", r.id, err, string(data))
 	}
@@ -228,11 +228,11 @@ func (r *room) onGift(client *dm.Client, cmd string, data []byte) bool {
 		GiftCount:  int64(msg.Num),
 	}
 
-	if err := db.GetGiftDAL().Insert(&gift); err != nil {
+	if err := db.GetGiftDAL().Insert(nil, &gift); err != nil {
 		swe.CtxLogger(nil).Error("insert gift to room %d failed: %v, original: %s", r.id, err, string(data))
 	}
 
-	db.GetGiftDAL().UpdateGiftInfo(msg.GiftID, msg.GiftName, msg.Price)
+	db.GetGiftDAL().UpdateGiftInfo(nil, msg.GiftID, msg.GiftName, msg.Price)
 
 	return false
 }

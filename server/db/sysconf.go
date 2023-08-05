@@ -2,6 +2,7 @@ package db
 
 import (
 	"github.com/zerozwt/octant/server/utils"
+	"github.com/zerozwt/swe"
 	"gorm.io/gorm"
 	"gorm.io/gorm/clause"
 )
@@ -25,9 +26,9 @@ type SysConfigDAL struct{}
 
 func GetSysConfigDAL() SysConfigDAL { return SysConfigDAL{} }
 
-func (dal SysConfigDAL) GetConfig(key string) (string, error) {
+func (dal SysConfigDAL) GetConfig(ctx *swe.Context, key string) (string, error) {
 	tmp := []SysConfig{}
-	err := gDB.Where("key = ?", key).Find(&tmp).Error
+	err := getInstance(ctx).Where("key = ?", key).Find(&tmp).Error
 
 	if err != nil && err != gorm.ErrRecordNotFound {
 		return "", err
@@ -40,9 +41,9 @@ func (dal SysConfigDAL) GetConfig(key string) (string, error) {
 	return tmp[0].Value, nil
 }
 
-func (dal SysConfigDAL) SetConfig(key, value string) error {
+func (dal SysConfigDAL) SetConfig(ctx *swe.Context, key, value string) error {
 	tmp := SysConfig{Key: key, Value: value}
-	return gDB.Clauses(clause.OnConflict{
+	return getInstance(ctx).Clauses(clause.OnConflict{
 		Columns:   []clause.Column{{Name: "key"}},
 		DoUpdates: clause.AssignmentColumns([]string{"value"}),
 	}).Create(&tmp).Error

@@ -33,7 +33,7 @@ func (ins adminHandler) checkLogin(ctx *swe.Context, unused *bs.Nothing) (*bs.No
 }
 
 func (ins adminHandler) login(ctx *swe.Context, req *bs.AdminLoginReq) (*bs.Nothing, swe.SweError) {
-	passInDB, err := db.GetSysConfigDAL().GetConfig(db.DB_SYSCONF_ADMIN_PASS)
+	passInDB, err := db.GetSysConfigDAL().GetConfig(ctx, db.DB_SYSCONF_ADMIN_PASS)
 	if err != nil {
 		swe.CtxLogger(ctx).Error("query db error %v", err)
 		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
@@ -56,7 +56,7 @@ func (ins adminHandler) logout(ctx *swe.Context, req *bs.Nothing) (*bs.Nothing, 
 }
 
 func (ins adminHandler) changePass(ctx *swe.Context, req *bs.AdminChangePassReq) (*bs.Nothing, swe.SweError) {
-	passInDB, err := db.GetSysConfigDAL().GetConfig(db.DB_SYSCONF_ADMIN_PASS)
+	passInDB, err := db.GetSysConfigDAL().GetConfig(ctx, db.DB_SYSCONF_ADMIN_PASS)
 	if err != nil {
 		swe.CtxLogger(ctx).Error("query db error %v", err)
 		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
@@ -69,7 +69,7 @@ func (ins adminHandler) changePass(ctx *swe.Context, req *bs.AdminChangePassReq)
 	}
 
 	passNew := db.GetSysConfigDAL().EncodeAdminPassword(req.New)
-	err = db.GetSysConfigDAL().SetConfig(db.DB_SYSCONF_ADMIN_PASS, passNew)
+	err = db.GetSysConfigDAL().SetConfig(ctx, db.DB_SYSCONF_ADMIN_PASS, passNew)
 	if err != nil {
 		swe.CtxLogger(ctx).Error("write to db error %v", err)
 		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
@@ -79,7 +79,7 @@ func (ins adminHandler) changePass(ctx *swe.Context, req *bs.AdminChangePassReq)
 }
 
 func (ins adminHandler) streamerList(ctx *swe.Context, req *bs.PageReq) (*bs.PageRsp, swe.SweError) {
-	count, streamers, err := db.GetStreamerDAL().Page((req.Page-1)*req.Size, req.Size)
+	count, streamers, err := db.GetStreamerDAL().Page(ctx, (req.Page-1)*req.Size, req.Size)
 	if err != nil {
 		swe.CtxLogger(ctx).Error("query db error %v", err)
 		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
@@ -125,7 +125,7 @@ func (ins adminHandler) createStreamer(ctx *swe.Context, req *bs.AdminCreateStre
 	item.PublicKey = utils.Base64Encode(pubKey)
 
 	// try insert into table
-	rows, err := db.GetStreamerDAL().Insert(&item, false)
+	rows, err := db.GetStreamerDAL().Insert(ctx, &item, false)
 	if err != nil {
 		swe.CtxLogger(ctx).Error("insert into db error %v", err)
 		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
@@ -146,7 +146,7 @@ func (ins adminHandler) createStreamer(ctx *swe.Context, req *bs.AdminCreateStre
 
 func (ins adminHandler) deleteStreamer(ctx *swe.Context, req *bs.IDReq) (*bs.Nothing, swe.SweError) {
 	// delete from db
-	rows, err := db.GetStreamerDAL().Delete(req.ID)
+	rows, err := db.GetStreamerDAL().Delete(ctx, req.ID)
 	if err != nil {
 		swe.CtxLogger(ctx).Error("delete from db error %v", err)
 		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
@@ -167,7 +167,7 @@ func (ins adminHandler) deleteStreamer(ctx *swe.Context, req *bs.IDReq) (*bs.Not
 
 func (ins adminHandler) resetStreamerPassword(ctx *swe.Context, req *bs.AdminResetStreamerReq) (*bs.Nothing, swe.SweError) {
 	// find streamer from db
-	streamer, err := db.GetStreamerDAL().Find(req.ID)
+	streamer, err := db.GetStreamerDAL().Find(ctx, req.ID)
 	if err != nil {
 		swe.CtxLogger(ctx).Error("query db error %v", err)
 		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
@@ -189,7 +189,7 @@ func (ins adminHandler) resetStreamerPassword(ctx *swe.Context, req *bs.AdminRes
 	streamer.PublicKey = utils.Base64Encode(pubKey)
 
 	// update keypair
-	row, err := db.GetStreamerDAL().Insert(streamer, true)
+	row, err := db.GetStreamerDAL().Insert(ctx, streamer, true)
 	if err != nil {
 		swe.CtxLogger(ctx).Error("insert into db error %v", err)
 		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
