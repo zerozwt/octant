@@ -22,9 +22,12 @@ type TaskContext interface {
 
 type Handler func(ctx *swe.Context, taskCtx TaskContext) error
 
-var hMap map[string]Handler
+var hMapLock sync.RWMutex
+var hMap map[string]Handler = map[string]Handler{}
 
 func RegisterHandler(name string, handler Handler) {
+	hMapLock.Lock()
+	defer hMapLock.Unlock()
 	hMap[name] = handler
 }
 
@@ -106,6 +109,8 @@ func (s *scheduler) tick() {
 func (s *scheduler) run() {
 	s.lock.Lock()
 	defer s.lock.Unlock()
+	hMapLock.RLock()
+	defer hMapLock.RUnlock()
 
 	now := time.Now().Unix()
 
