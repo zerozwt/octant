@@ -11,6 +11,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/zerozwt/octant/server/async_task"
 	"github.com/zerozwt/octant/server/bridge"
 	"github.com/zerozwt/octant/server/collector"
 	"github.com/zerozwt/octant/server/db"
@@ -81,6 +82,11 @@ func main() {
 	// init api engine if needed
 	engine := InitEngine()
 	if engine != nil {
+		logger.Info("init async task system ...")
+		if err := async_task.Init(); err != nil {
+			logger.Error("init async task system failed: %v", err)
+			return
+		}
 		go engine.Serve(gConfig.WebAddr())
 		logger.Info("web app service started on %s", gConfig.WebAddr())
 	}
