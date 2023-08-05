@@ -74,13 +74,13 @@ func (l *gormLogger) Info(ctx context.Context, format string, args ...interface{
 
 func (l *gormLogger) Warn(ctx context.Context, format string, args ...interface{}) {
 	if l.level >= logger.Warn {
-		l.sweLogger(ctx).Info(format, args...)
+		l.sweLogger(ctx).Warn(format, args...)
 	}
 }
 
 func (l *gormLogger) Error(ctx context.Context, format string, args ...interface{}) {
 	if l.level >= logger.Error {
-		l.sweLogger(ctx).Info(format, args...)
+		l.sweLogger(ctx).Error(format, args...)
 	}
 }
 
