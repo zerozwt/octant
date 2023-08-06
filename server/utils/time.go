@@ -45,11 +45,13 @@ func TimeStringToUTC(ts string) (int64, error) {
 }
 
 func strToInt(value string, begin, end int) int {
-	ret := 0
-	for i := begin; i < end; i++ {
-		ret = ret*10 + int(value[i]-'0')
+	switch end - begin {
+	case 4:
+		return int(value[begin]-'0')*1000 + int(value[begin+1]-'0')*100 + int(value[begin+2]-'0')*10 + int(value[begin+3]-'0')
+	case 2:
+		return int(value[begin]-'0')*10 + int(value[begin+1]-'0')
 	}
-	return ret
+	return 0
 }
 
 func isLunarYear(year int) bool {
