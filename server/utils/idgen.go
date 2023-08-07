@@ -13,13 +13,13 @@ const (
 	intMask  = (1 << 31) - 1
 )
 
-var idLow atomic.Int32
+var idLow atomic.Uint32
 
 func init() {
 	var buf [4]byte
 	rand.Read(buf[:])
 	n := binary.BigEndian.Uint32(buf[:])
-	idLow.Store(int32(n & intMask))
+	idLow.Store(n & intMask)
 }
 
 func GenerateID() int64 {
