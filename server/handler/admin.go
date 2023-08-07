@@ -152,8 +152,6 @@ func (ins adminHandler) deleteStreamer(ctx *swe.Context, req *bs.IDReq) (*bs.Not
 		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
 	}
 
-	// [TODO] delete reward event & reward event user
-
 	if rows > 0 {
 		// stop tracking live room
 		err = bridge.GetBridge().DelRoom(req.ID)
