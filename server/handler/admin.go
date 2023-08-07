@@ -130,7 +130,7 @@ func (ins adminHandler) createStreamer(ctx *swe.Context, req *bs.AdminCreateStre
 		swe.CtxLogger(ctx).Error("insert into db error %v", err)
 		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
 	}
-	if rows == 0 {
+	if rows <= 0 {
 		swe.CtxLogger(ctx).Error("add live room %d failed: room id or account duplicated", req.ID)
 		return nil, swe.Error(EC_ADMIN_DUPLICATED_STREAMER, fmt.Errorf("duplicated streamer"))
 	}
@@ -195,7 +195,7 @@ func (ins adminHandler) resetStreamerPassword(ctx *swe.Context, req *bs.AdminRes
 		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
 	}
 
-	if row == 0 {
+	if row <= 0 {
 		swe.CtxLogger(ctx).Error("update keypair for live room %d affected 0 row", req.ID)
 		return nil, swe.Error(EC_GENERIC_DB_FAIL, fmt.Errorf("record not affected"))
 	}
