@@ -3,10 +3,10 @@ package db
 import "github.com/zerozwt/swe"
 
 type MembershipRecord struct {
-	RoomID     int64  `gorm:"index:idx_member_room_time;column:room_id"`
+	RoomID     int64  `gorm:"index:idx_member_room_time;column:room_id" json:"-"`
 	SendTime   int64  `gorm:"index:idx_member_room_time;column:send_time"`
-	SenderUID  int64  `gorm:"column:sender_uid"`
-	SenderName string `gorm:"type:string;size:256;column:sender_name"`
+	SenderUID  int64  `gorm:"column:sender_uid" json:"-"`
+	SenderName string `gorm:"type:string;size:256;column:sender_name" json:"-"`
 	GuardLevel int    `gorm:"column:level"`
 	Count      int
 }

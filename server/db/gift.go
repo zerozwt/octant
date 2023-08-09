@@ -7,11 +7,11 @@ import (
 )
 
 type GiftRecord struct {
-	BatchID    string `gorm:"type:string;size:1024;column:batch_id;primaryKey"`
-	RoomID     int64  `gorm:"index:idx_gift_room_time;column:room_id"`
+	BatchID    string `gorm:"type:string;size:1024;column:batch_id;primaryKey" json:"-"`
+	RoomID     int64  `gorm:"index:idx_gift_room_time;column:room_id" json:"-"`
 	SendTime   int64  `gorm:"index:idx_gift_room_time;column:send_time"`
-	SenderUID  int64  `gorm:"column:sender_uid"`
-	SenderName string `gorm:"type:string;size:256;column:sender_name"`
+	SenderUID  int64  `gorm:"column:sender_uid" json:"-"`
+	SenderName string `gorm:"type:string;size:256;column:sender_name" json:"-"`
 	GiftID     int64  `gorm:"column:gift_id"`
 	GiftName   string `gorm:"type:string;size:256"`
 	GiftPrice  int64
