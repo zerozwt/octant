@@ -97,6 +97,10 @@ func (ins eventHandler) calculate(ctx *swe.Context, taskCtx async_task.TaskConte
 		logger.Error("find event from db failed: %v", err)
 		return err
 	}
+	if event == nil {
+		logger.Error("find event %d from db failed: not found", evtID)
+		return fmt.Errorf("event not found")
+	}
 	err = db.GetRewardEventDAL().SetStatus(ctx, evtID, db.EVENT_CALCULATING)
 	if err != nil {
 		logger.Error("set event status to calculating failed: %v", err)
