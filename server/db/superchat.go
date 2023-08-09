@@ -56,9 +56,19 @@ func (dal SCDal) Page(ctx *swe.Context, roomID, tsBegin, tsEnd int64, offset, li
 		return 0, nil, err
 	}
 
-	tx = tx.Offset(offset).Limit(limit).Order("send_time")
+	tx = tx.Offset(offset).Limit(limit).Order("send_time desc")
 	ret := []SuperChatRecord{}
 	err = tx.Find(&ret).Error
 
 	return count, ret, err
+}
+
+func (dal SCDal) Range(ctx *swe.Context, roomID, tsBegin, tsEnd int64) ([]*SuperChatRecord, error) {
+	ret := []*SuperChatRecord{}
+	tx := getInstance(ctx)
+	tx = tx.Where("room_id = ?", roomID)
+	tx = tx.Where("send_time between ? and ?", tsBegin, tsEnd)
+	tx = tx.Order("send_time")
+	err := tx.Find(&ret).Error
+	return ret, err
 }

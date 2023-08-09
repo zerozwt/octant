@@ -52,9 +52,19 @@ func (dal MemberDAL) Page(ctx *swe.Context, roomID, tsBegin, tsEnd int64, offset
 		return 0, nil, err
 	}
 
-	tx = tx.Offset(offset).Limit(limit).Order("send_time")
+	tx = tx.Offset(offset).Limit(limit).Order("send_time desc")
 	ret := []MembershipRecord{}
 	err = tx.Find(&ret).Error
 
 	return count, ret, err
+}
+
+func (dal MemberDAL) Range(ctx *swe.Context, roomID, tsBegin, tsEnd int64) ([]*MembershipRecord, error) {
+	ret := []*MembershipRecord{}
+	tx := getInstance(ctx)
+	tx = tx.Where("room_id = ?", roomID)
+	tx = tx.Where("send_time between ? and ?", tsBegin, tsEnd)
+	tx = tx.Order("send_time")
+	err := tx.Find(&ret).Error
+	return ret, err
 }

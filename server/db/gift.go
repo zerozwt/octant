@@ -71,7 +71,7 @@ func (dal GiftDAL) Page(ctx *swe.Context, roomID, tsBegin, tsEnd int64, offset, 
 		return 0, nil, err
 	}
 
-	tx = tx.Offset(offset).Limit(limit).Order("send_time")
+	tx = tx.Offset(offset).Limit(limit).Order("send_time desc")
 	ret := []GiftRecord{}
 	err = tx.Find(&ret).Error
 
@@ -82,4 +82,14 @@ func (dal GiftDAL) Infos(ctx *swe.Context) (ret []GiftInfo, err error) {
 	ret = []GiftInfo{}
 	err = getInstance(ctx).Order("gift_id").Find(&ret).Error
 	return
+}
+
+func (dal GiftDAL) Range(ctx *swe.Context, roomID, tsBegin, tsEnd int64) ([]*GiftRecord, error) {
+	ret := []*GiftRecord{}
+	tx := getInstance(ctx)
+	tx = tx.Where("room_id = ?", roomID)
+	tx = tx.Where("send_time between ? and ?", tsBegin, tsEnd)
+	tx = tx.Order("send_time")
+	err := tx.Find(&ret).Error
+	return ret, err
 }
