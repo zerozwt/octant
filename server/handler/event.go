@@ -18,6 +18,9 @@ import (
 func init() {
 	registerHandler(GET, "/event/list", event.list, session.CheckStreamer)
 	registerHandler(POST, "/event/add", event.add, session.CheckStreamer)
+	registerHandler(POST, "/event/modify", event.modify, session.CheckStreamer)
+	registerHandler(GET, "/event/detail", event.detail, session.CheckStreamer)
+	registerHandler(POST, "/event/delete", event.delete, session.CheckStreamer)
 
 	async_task.RegisterHandler(asyncTaskCalculateEventList, event.calculate)
 }
@@ -232,4 +235,57 @@ func (ins eventHandler) calculate(ctx *swe.Context, taskCtx async_task.TaskConte
 
 	logger.Info("list calculation for event %d done", evtID)
 	return nil
+}
+
+func (ins eventHandler) modify(ctx *swe.Context, req *bs.EventModifyReq) (*bs.Nothing, swe.SweError) {
+	st, _ := session.GetStreamerSession(ctx)
+	if err := db.GetRewardEventDAL().UpdateEventInfo(ctx, req.ID, st.RoomID, req.Name, req.Reward); err != nil {
+		swe.CtxLogger(ctx).Error("update info for event %d error %v", req.ID, err)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
+	}
+	return &bs.Nothing{}, nil
+}
+
+func (ins eventHandler) detail(ctx *swe.Context, req *bs.IDReq) (*bs.EventDetailRsp, swe.SweError) {
+	st, _ := session.GetStreamerSession(ctx)
+	event, err := db.GetRewardEventDAL().GetByRoomID(ctx, req.ID, st.RoomID)
+	if err != nil {
+		swe.CtxLogger(ctx).Error("query db for event %d error %v", req.ID, err)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
+	}
+	if event == nil {
+		swe.CtxLogger(ctx).Error("query db for event %d room id %d not found", req.ID, st.RoomID)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, fmt.Errorf("event not found"))
+	}
+
+	ret := &bs.EventDetailRsp{
+		ID:     req.ID,
+		Name:   event.EventName,
+		Reward: event.RewardContent,
+	}
+
+	json := jsoniter.ConfigCompatibleWithStandardLibrary
+	err = json.UnmarshalFromString(event.Conditions, &ret.Condition)
+	if err != nil {
+		swe.CtxLogger(ctx).Error("decode condition for event %d error %v", req.ID, err)
+		return nil, swe.Error(EC_EVT_COND_DECODE_FAIL, err)
+	}
+
+	return ret, nil
+}
+
+func (ins eventHandler) delete(ctx *swe.Context, req *bs.IDReq) (*bs.Nothing, swe.SweError) {
+	st, _ := session.GetStreamerSession(ctx)
+	rows, err := db.GetRewardEventDAL().Delete(ctx, req.ID, st.RoomID)
+	if err != nil {
+		swe.CtxLogger(ctx).Error("delete event %d error %v", req.ID, err)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
+	}
+	if rows > 0 {
+		err = db.GetRewardEventDAL().ClearUsers(ctx, req.ID)
+		if err != nil {
+			swe.CtxLogger(ctx).Error("clear user list for event %d error %v", req.ID, err)
+		}
+	}
+	return &bs.Nothing{}, nil
 }

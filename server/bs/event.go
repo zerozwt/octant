@@ -151,3 +151,27 @@ func (req *EventAddReq) Validate(ctx *swe.Context) error {
 	}
 	return req.Condition.Validate(ctx)
 }
+
+type EventModifyReq struct {
+	ID     int64  `json:"id"`
+	Name   string `json:"name"`
+	Reward string `json:"reward"`
+}
+
+func (req *EventModifyReq) Validate(ctx *swe.Context) error {
+	if req.ID < 1 {
+		return fmt.Errorf("invalid id %d", req.ID)
+	}
+	if len(req.Name) == 0 {
+		return fmt.Errorf("no event name")
+	}
+
+	return nil
+}
+
+type EventDetailRsp struct {
+	ID        int64          `json:"id"`
+	Name      string         `json:"name"`
+	Reward    string         `json:"reward"`
+	Condition EventCondition `json:"conditions"`
+}
