@@ -227,6 +227,22 @@ func (ins eventHandler) calculate(ctx *swe.Context, taskCtx async_task.TaskConte
 		return err
 	}
 
+	// create dd accounts
+	nowTs := time.Now().Unix()
+	dd := make([]db.DDInfo, 0, len(users))
+	for _, uid := range uids {
+		dd = append(dd, db.DDInfo{
+			UID:        uid,
+			UserName:   users[uid].name,
+			AccessCode: db.GetDDInfoDAL().GenerateAccessCode(nowTs, evtID, uid),
+		})
+	}
+	if err = db.GetDDInfoDAL().BatchCreate(ctx, dd); err != nil {
+		db.GetRewardEventDAL().SetStatus(ctx, evtID, db.EVENT_ERROR)
+		logger.Error("create dd accounts for event %d failed: %v", evtID, err)
+		return err
+	}
+
 	// set status to ready
 	if err = db.GetRewardEventDAL().SetStatus(ctx, evtID, db.EVENT_READY); err != nil {
 		logger.Error("set event status to ready failed: %v ", err)

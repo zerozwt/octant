@@ -10,7 +10,7 @@ type RewardEvent struct {
 	RoomID        int64  `gorm:"index:idx_re_room;column:room_id"`
 	EventName     string `gorm:"type:string;size:256;column:name"`
 	RewardContent string `gorm:"type:TEXT;column:content"`
-	Conditions    string `gorm:"type:TEXT"`
+	Conditions    string `gorm:"type:TEXT;column:conditions"`
 	CreateTime    int64  `gorm:"index:idx_re_room;column:create_time"`
 	Status        int    `gorm:"column:status"`
 }
@@ -20,11 +20,11 @@ func (s RewardEvent) TableName() string { return "t_event" }
 type RewardUser struct {
 	EventID     int64  `gorm:"index:idx_ru_evt;column:event_id"`
 	UID         int64  `gorm:"index:idx_ru_uid;column:uid"`
-	UserName    string `gorm:"type:string;size:256"`
+	UserName    string `gorm:"type:string;size:256;column:user_name"`
 	Time        int64  `gorm:"column:ts"`
 	Blocked     int    `gorm:"column:block"`
-	Columns     string `gorm:"type:TEXT"`
-	AddressInfo string `gorm:"type:string;size:4096"`
+	Columns     string `gorm:"type:TEXT;column:cols"`
+	AddressInfo string `gorm:"type:string;size:4096;column:address_info"`
 }
 
 func (s RewardUser) TableName() string { return "t_event_user" }
