@@ -465,7 +465,7 @@ func (ins eventHandler) download(ctx *swe.Context) {
 		}
 		userDatas = append(userDatas, data)
 		if key, ok := keyMap[item.UID]; ok {
-			addr, err := db.DecryptUserAddress(ctx, key, item.AddressInfo)
+			addr, err := utils.DecryptUserAddress(ctx, key, item.AddressInfo)
 			if err != nil {
 				logger.Error("decrypt address info for user %d in event %d failed: %v", item.UID, req.ID, err)
 			} else {

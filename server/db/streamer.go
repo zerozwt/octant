@@ -96,3 +96,9 @@ func (dal StreamerDAL) FindByAccount(ctx *swe.Context, account string) (*Streame
 func (dal StreamerDAL) UpdatePrivateKey(ctx *swe.Context, id int64, b64EncPriKey string) error {
 	return getInstance(ctx).Exec("update t_streamer set private_key = ? where room_id = ?", b64EncPriKey, id).Error
 }
+
+func (dal StreamerDAL) FindByRoomIDs(ctx *swe.Context, roomIDs []int64) ([]Streamer, error) {
+	ret := []Streamer{}
+	err := getInstance(ctx).Where("room_id in ?", roomIDs).Find(&ret).Error
+	return ret, err
+}

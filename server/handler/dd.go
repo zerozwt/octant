@@ -16,6 +16,10 @@ func init() {
 	registerHandler(POST, "/dd/login", dd.login)
 	registerHandler(GET, "/dd/logout", dd.logout, session.CheckDD)
 	registerHandler(POST, "/dd/password", dd.setPassword, session.CheckDDInAccess)
+
+	registerHandler(GET, "/dd/events", dd.events, session.CheckDD)
+	registerHandler(GET, "/dd/address", dd.getAddress, session.CheckDD)
+	registerHandler(POST, "/dd/address", dd.setAddress, session.CheckDD)
 }
 
 type ddHandler struct{}
@@ -172,4 +176,198 @@ func (ins ddHandler) setPasswordByAccessCode(ctx *swe.Context, req *bs.DDSetPass
 		return swe.Error(EC_GENERIC_DB_FAIL, err)
 	}
 	return nil
+}
+
+func (ins ddHandler) events(ctx *swe.Context, req *bs.PageReq) (*bs.PageRsp, swe.SweError) {
+	logger := swe.CtxLogger(ctx)
+	user, _ := session.GetDDSession(ctx)
+
+	// get user records
+	count, list, err := db.GetRewardEventDAL().UserRecords(ctx, user.UID, (req.Page-1)*req.Size, req.Size)
+	if err != nil {
+		logger.Error("query db error %v", err)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
+	}
+
+	ret := bs.PageRsp{
+		Count: count,
+		List:  []any{},
+	}
+
+	if count == 0 {
+		return &ret, nil
+	}
+
+	// get events
+	eids := []int64{}
+	for _, item := range list {
+		eids = append(eids, item.EventID)
+	}
+	events, err := db.GetRewardEventDAL().GetByIDs(ctx, eids)
+	if err != nil {
+		logger.Error("query db error %v", err)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
+	}
+
+	rids := []int64{}
+	evtMap := map[int64]*db.RewardEvent{}
+	for idx := range events {
+		rids = append(rids, events[idx].ID)
+		evtMap[events[idx].ID] = &events[idx]
+	}
+
+	// get streamers
+	streamers, err := db.GetStreamerDAL().FindByRoomIDs(ctx, rids)
+	if err != nil {
+		logger.Error("query db error %v", err)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
+	}
+
+	stMap := map[int64]*db.Streamer{}
+	for idx := range streamers {
+		stMap[streamers[idx].RoomID] = &streamers[idx]
+	}
+
+	for _, item := range list {
+		data := bs.DDEventItem{
+			ID:   item.EventID,
+			Addr: len(item.AddressInfo) > 0,
+		}
+
+		event, ok := evtMap[data.ID]
+		if !ok {
+			continue
+		}
+		data.Name = event.EventName
+		data.Reward = event.RewardContent
+
+		st, ok := stMap[event.RoomID]
+		if !ok {
+			continue
+		}
+		data.Streamer.Name = st.StreamerName
+		data.Streamer.RoomID = st.RoomID
+
+		ret.List = append(ret.List, data)
+	}
+
+	return &ret, nil
+}
+
+func (ddHandler) getAddress(ctx *swe.Context, req *bs.IDReq) (*bs.DDAddrInfo, swe.SweError) {
+	logger := swe.CtxLogger(ctx)
+	user, _ := session.GetDDSession(ctx)
+
+	// query records
+	records, err := db.GetRewardEventDAL().UserInfoByUIDAndEventID(ctx, user.UID, req.ID)
+	if err != nil {
+		logger.Error("query db error %v", err)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
+	}
+	if len(records) == 0 {
+		logger.Error("uid %d event id %d no records", user.UID, req.ID)
+		return &bs.DDAddrInfo{}, nil
+	}
+	if len(records[0].AddressInfo) == 0 {
+		return &bs.DDAddrInfo{EventID: req.ID}, nil
+	}
+
+	// query event
+	event, err := db.GetRewardEventDAL().Get(ctx, req.ID)
+	if err != nil {
+		logger.Error("query db error %v", err)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
+	}
+	if event == nil {
+		logger.Error("event %d not found", req.ID)
+		return &bs.DDAddrInfo{EventID: req.ID}, nil
+	}
+
+	// query streamer
+	st, err := db.GetStreamerDAL().Find(ctx, event.RoomID)
+	if err != nil {
+		logger.Error("query db error %v", err)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
+	}
+	if st == nil {
+		logger.Error("streamer room %d not found", event.RoomID)
+		return &bs.DDAddrInfo{EventID: req.ID}, nil
+	}
+
+	// decrypt
+	pubKey, err := utils.Base64Decode(st.PublicKey)
+	if err != nil {
+		logger.Error("decode streamer %d public key failed: %v", st.RoomID, err)
+		return &bs.DDAddrInfo{EventID: req.ID}, nil
+	}
+
+	info, err := utils.DecryptUserAddress(ctx, pubKey, records[0].AddressInfo)
+	if err != nil {
+		logger.Error("decrypt address info failed: %v", err)
+		return &bs.DDAddrInfo{EventID: req.ID}, nil
+	}
+
+	ret := &bs.DDAddrInfo{
+		EventID: req.ID,
+		Name:    info.Name,
+		Phone:   info.Phone,
+		Addr:    info.Addr,
+	}
+
+	return ret, nil
+}
+
+func (ins ddHandler) setAddress(ctx *swe.Context, req *bs.DDAddrInfo) (*bs.Nothing, swe.SweError) {
+	logger := swe.CtxLogger(ctx)
+	user, _ := session.GetDDSession(ctx)
+
+	// query event
+	event, err := db.GetRewardEventDAL().Get(ctx, req.EventID)
+	if err != nil {
+		logger.Error("query db error %v", err)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
+	}
+	if event == nil {
+		logger.Error("event %d not found", req.EventID)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, fmt.Errorf("event not found"))
+	}
+
+	// query streamer
+	st, err := db.GetStreamerDAL().Find(ctx, event.RoomID)
+	if err != nil {
+		logger.Error("query db error %v", err)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
+	}
+	if st == nil {
+		logger.Error("streamer room %d not found", event.RoomID)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, fmt.Errorf("streamer not found"))
+	}
+
+	pubKey, err := utils.Base64Decode(st.PublicKey)
+	if err != nil {
+		logger.Error("decode streamer %d public key failed: %v", st.RoomID, err)
+		return nil, swe.Error(EC_ST_DECODE_PUB_FAIL, fmt.Errorf("streamer pubkey decode failed"))
+	}
+
+	addrData, err := utils.EncryptUserAddress(ctx, pubKey, &utils.RewardUserAddress{
+		Name:  req.Name,
+		Phone: req.Phone,
+		Addr:  req.Addr,
+	})
+
+	if err != nil {
+		logger.Error("encrypt addr data failed: %v", err)
+		return nil, swe.Error(EC_DD_ADDR_ENC_FAIL, err)
+	}
+
+	rows, err := db.GetRewardEventDAL().UpdateAddrInfo(ctx, user.UID, req.EventID, addrData)
+	if err != nil {
+		logger.Error("update address info failed: uid %d event %d : %v", user.UID, req.EventID, err)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
+	}
+	if rows < 1 {
+		logger.Error("update address info failed: uid %d event %d : no rows affected", user.UID, req.EventID)
+		return nil, swe.Error(EC_DD_SET_ADDR_FAIL, fmt.Errorf("no records updated"))
+	}
+	return &bs.Nothing{}, nil
 }

@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/zerozwt/octant/server/bs"
-	"github.com/zerozwt/octant/server/db"
 	"github.com/zerozwt/octant/server/utils"
 	"github.com/zerozwt/swe"
 )
@@ -14,7 +13,7 @@ const (
 	CTX_KEY_ADDR = "oct_user_addr"
 )
 
-type AddrMap map[int64]*db.RewardUserAddress
+type AddrMap map[int64]*utils.RewardUserAddress
 
 type Picker interface {
 	Pick(ctx *swe.Context, user *UserData) string
