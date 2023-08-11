@@ -174,6 +174,7 @@ type EventDetailRsp struct {
 	Name      string         `json:"name"`
 	Reward    string         `json:"reward"`
 	Condition EventCondition `json:"conditions"`
+	Status    int            `json:"status"`
 }
 
 type EventUserListReq struct {

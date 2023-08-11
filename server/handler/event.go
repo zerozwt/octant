@@ -289,6 +289,7 @@ func (ins eventHandler) detail(ctx *swe.Context, req *bs.IDReq) (*bs.EventDetail
 		ID:     req.ID,
 		Name:   event.EventName,
 		Reward: event.RewardContent,
+		Status: event.Status,
 	}
 
 	json := jsoniter.ConfigCompatibleWithStandardLibrary
