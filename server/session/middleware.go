@@ -82,6 +82,23 @@ func CheckDD(ctx *swe.Context) {
 	checkPermission[*DDSession](ctx, cookieDDKey, ctxDDKey, ddCheckFail)
 }
 
+func CheckDDInAccess(ctx *swe.Context) {
+	sessKey, ok := getCtxCookie(ctx, cookieDDKey)
+	if !ok {
+		ctx.Next()
+		return
+	}
+
+	sessData, ok := getSessionData[*DDSession](sessKey)
+	if !ok {
+		ctx.Next()
+		return
+	}
+
+	ctx.Put(ctxDDKey, sessData)
+	ctx.Next()
+}
+
 func GrantDD(ctx *swe.Context, data *DDSession) {
 	grantCtxPermission(ctx, cookieDDKey, data)
 }

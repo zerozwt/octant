@@ -76,3 +76,31 @@ func (dal *DDInfoDAL) GetPublicKeys(ctx *swe.Context, uids []int64) (PublicKeyMa
 
 	return ret, err
 }
+
+func (dal *DDInfoDAL) GetByAccessCode(ctx *swe.Context, code string) (*DDInfo, error) {
+	ret := []DDInfo{}
+	err := getInstance(ctx).Where("access_code = ?", code).Find(&ret).Error
+
+	if len(ret) == 0 {
+		return nil, err
+	}
+	return &ret[0], err
+}
+
+func (dal *DDInfoDAL) Get(ctx *swe.Context, uid int64) (*DDInfo, error) {
+	ret := []DDInfo{}
+	err := getInstance(ctx).Where("uid = ?", uid).Find(&ret).Error
+
+	if len(ret) == 0 {
+		return nil, err
+	}
+	return &ret[0], err
+}
+
+func (dal *DDInfoDAL) SetKeyPair(ctx *swe.Context, info *DDInfo) error {
+	cc := clause.OnConflict{
+		Columns:   []clause.Column{{Name: "uid"}, {Name: "access_code"}},
+		DoUpdates: clause.AssignmentColumns([]string{"private_key", "public_key"}),
+	}
+	return getInstance(ctx).Clauses(cc).Create(info).Error
+}
