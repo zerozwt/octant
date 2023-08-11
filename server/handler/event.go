@@ -33,7 +33,7 @@ func init() {
 	registerHandler(POST, "/event/user/block", event.blockUser, session.CheckStreamer)
 	registerHandler(POST, "/event/user/unblock", event.unblockUser, session.CheckStreamer)
 
-	registerRawHandler(GET, "/api/event/user/dl", event.download, session.CheckStreamer)
+	registerRawHandler(GET, "/event/user/dl", event.download, session.CheckStreamer)
 }
 
 type eventHandler struct{}
