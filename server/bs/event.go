@@ -175,3 +175,35 @@ type EventDetailRsp struct {
 	Reward    string         `json:"reward"`
 	Condition EventCondition `json:"conditions"`
 }
+
+type EventUserListReq struct {
+	EventID int64 `json:"event_id"`
+	Page    int   `json:"page"`
+	Size    int   `json:"size"`
+}
+
+func (req EventUserListReq) Validate(ctx *swe.Context) error {
+	if req.Page < 1 {
+		return fmt.Errorf("invalid page %d", req.Page)
+	}
+	if req.Size < 1 || req.Size > 100 {
+		return fmt.Errorf("invalid size %d", req.Size)
+	}
+	if req.EventID < 0 {
+		return fmt.Errorf("invalid event id %d", req.EventID)
+	}
+	return nil
+}
+
+type EventUserListItem struct {
+	UID   int64          `json:"uid"`
+	Name  string         `json:"name"`
+	Time  string         `json:"time"`
+	Cols  map[string]any `json:"cols"`
+	Block bool           `json:"block"`
+}
+
+type EventUIDReq struct {
+	EventID int64 `json:"event_id"`
+	UID     int64 `json:"uid"`
+}

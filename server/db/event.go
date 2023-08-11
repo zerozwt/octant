@@ -1,6 +1,9 @@
 package db
 
 import (
+	jsoniter "github.com/json-iterator/go"
+	"github.com/zerozwt/octant/server/session"
+	"github.com/zerozwt/octant/server/utils"
 	"github.com/zerozwt/swe"
 	"gorm.io/gorm/clause"
 )
@@ -28,6 +31,55 @@ type RewardUser struct {
 }
 
 func (s RewardUser) TableName() string { return "t_event_user" }
+
+type RewardUserAddress struct {
+	Name  string `json:"name"`
+	Phone string `json:"phone"`
+	Addr  string `json:"addr"`
+}
+
+func DecryptUserAddress(ctx *swe.Context, pubKey []byte, addr string) (*RewardUserAddress, error) {
+	if len(addr) == 0 {
+		return &RewardUserAddress{}, nil
+	}
+
+	streamer, ok := session.GetStreamerSession(ctx)
+	if !ok || streamer == nil {
+		return &RewardUserAddress{}, nil
+	}
+
+	key, err := utils.ECDH(streamer.PrivateKey, pubKey)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := utils.Decrypt(key, addr)
+	if err != nil {
+		return nil, err
+	}
+
+	json := jsoniter.ConfigCompatibleWithStandardLibrary
+	ret := RewardUserAddress{}
+	err = json.Unmarshal(data, &ret)
+	return &ret, err
+}
+
+func EncryptUserAddress(ctx *swe.Context, pubKey []byte, addr *RewardUserAddress) (string, error) {
+	dd, ok := session.GetDDSession(ctx)
+	if !ok || dd == nil {
+		return "", nil
+	}
+
+	key, err := utils.ECDH(dd.PrivateKey, pubKey)
+	if err != nil {
+		return "", err
+	}
+
+	json := jsoniter.ConfigCompatibleWithStandardLibrary
+	data, _ := json.Marshal(addr)
+
+	return utils.Encrypt(key, data)
+}
 
 const (
 	EVENT_IDLE = iota + 1
@@ -103,4 +155,43 @@ func (dal RewardEventDAL) GetByRoomID(ctx *swe.Context, id, roomID int64) (*Rewa
 func (dal RewardEventDAL) Delete(ctx *swe.Context, id, roomID int64) (int64, error) {
 	result := getInstance(ctx).Exec("delete from t_event where id = ? and room_id = ?", id, roomID)
 	return result.RowsAffected, result.Error
+}
+
+func (dal RewardEventDAL) Exist(ctx *swe.Context, id, roomID int64) (bool, error) {
+	ret := []RewardEvent{}
+	err := getInstance(ctx).Where("id = ? and room_id = ?", id, roomID).Select("id", "name").Find(&ret).Error
+
+	return len(ret) > 0, err
+}
+
+func (dal RewardEventDAL) UserPage(ctx *swe.Context, eventID int64, offset, limit int) (int, []RewardUser, error) {
+	ret := []RewardUser{}
+	tx := getInstance(ctx)
+	tx = tx.Where("event_id = ?", eventID)
+
+	count := 0
+	if err := newDBSession(ctx, tx).Select("count(*)").Scan(&count).Error; err != nil {
+		return 0, nil, err
+	}
+
+	tx = tx.Offset(offset).Limit(limit).Order("ts")
+	err := tx.Find(&ret).Error
+	return count, ret, err
+}
+
+func (dal RewardEventDAL) BlockUser(ctx *swe.Context, eventID, uid int64, block bool) (bool, error) {
+	blockValue := 0
+	if block {
+		blockValue = 1
+	}
+	result := getInstance(ctx).Exec("update t_event_user set block = ? where event_id = ? and uid = ?", blockValue, eventID, uid)
+	return result.RowsAffected > 0, result.Error
+}
+
+func (dal RewardEventDAL) Users(ctx *swe.Context, eventID int64) ([]RewardUser, error) {
+	ret := []RewardUser{}
+	tx := getInstance(ctx)
+	tx = tx.Where("event_id = ?", eventID)
+	err := tx.Find(&ret).Error
+	return ret, err
 }

@@ -1,15 +1,20 @@
 package handler
 
 import (
+	"bytes"
+	"encoding/csv"
 	"fmt"
+	"net/http"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	jsoniter "github.com/json-iterator/go"
 	"github.com/zerozwt/octant/server/async_task"
 	"github.com/zerozwt/octant/server/bs"
 	"github.com/zerozwt/octant/server/db"
+	"github.com/zerozwt/octant/server/handler/event_calc"
 	"github.com/zerozwt/octant/server/session"
 	"github.com/zerozwt/octant/server/utils"
 	"github.com/zerozwt/swe"
@@ -23,6 +28,12 @@ func init() {
 	registerHandler(POST, "/event/delete", event.delete, session.CheckStreamer)
 
 	async_task.RegisterHandler(asyncTaskCalculateEventList, event.calculate)
+
+	registerHandler(POST, "/event/user/list", event.userList, session.CheckStreamer)
+	registerHandler(POST, "/event/user/block", event.blockUser, session.CheckStreamer)
+	registerHandler(POST, "/event/user/unblock", event.unblockUser, session.CheckStreamer)
+
+	registerRawHandler(GET, "/api/event/user/dl", event.download, session.CheckStreamer)
 }
 
 type eventHandler struct{}
@@ -131,7 +142,7 @@ func (ins eventHandler) calculate(ctx *swe.Context, taskCtx async_task.TaskConte
 	// load needed data
 	timeRange := bs.ConditionTimeRange{}
 	cond.CalculateRange(&timeRange)
-	users := map[int64]*eventUserData{}
+	users := map[int64]*event_calc.UserData{}
 
 	if tr, ok := timeRange.Range["gift"]; ok {
 		rec, err := db.GetGiftDAL().Range(ctx, event.RoomID, tr.Start(), tr.End())
@@ -143,9 +154,9 @@ func (ins eventHandler) calculate(ctx *swe.Context, taskCtx async_task.TaskConte
 		logger.Info("%d records of gift loaded", len(rec))
 		for _, item := range rec {
 			if _, ok := users[item.SenderUID]; !ok {
-				users[item.SenderUID] = newEventUser(item.SenderUID)
+				users[item.SenderUID] = event_calc.NewEventUser(item.SenderUID)
 			}
-			users[item.SenderUID].gift = append(users[item.SenderUID].gift, item)
+			users[item.SenderUID].Gift = append(users[item.SenderUID].Gift, item)
 		}
 	}
 	if tr, ok := timeRange.Range["sc"]; ok {
@@ -158,9 +169,9 @@ func (ins eventHandler) calculate(ctx *swe.Context, taskCtx async_task.TaskConte
 		logger.Info("%d records of super chat loaded", len(rec))
 		for _, item := range rec {
 			if _, ok := users[item.SenderUID]; !ok {
-				users[item.SenderUID] = newEventUser(item.SenderUID)
+				users[item.SenderUID] = event_calc.NewEventUser(item.SenderUID)
 			}
-			users[item.SenderUID].sc = append(users[item.SenderUID].sc, item)
+			users[item.SenderUID].SC = append(users[item.SenderUID].SC, item)
 		}
 	}
 	if tr, ok := timeRange.Range["member"]; ok {
@@ -173,22 +184,22 @@ func (ins eventHandler) calculate(ctx *swe.Context, taskCtx async_task.TaskConte
 		logger.Info("%d records of membership loaded", len(rec))
 		for _, item := range rec {
 			if _, ok := users[item.SenderUID]; !ok {
-				users[item.SenderUID] = newEventUser(item.SenderUID)
+				users[item.SenderUID] = event_calc.NewEventUser(item.SenderUID)
 			}
-			users[item.SenderUID].member = append(users[item.SenderUID].member, item)
+			users[item.SenderUID].Member = append(users[item.SenderUID].Member, item)
 		}
 	}
 
 	logger.Info("filtering data for event %d", evtID)
 
 	// filter sender
-	filter := buildEventFilter(&cond)
+	filter := event_calc.BuildFilter(&cond)
 	tmp := users
-	users = map[int64]*eventUserData{}
+	users = map[int64]*event_calc.UserData{}
 	for uid, data := range tmp {
-		strip := newEventUserStrip()
+		strip := event_calc.NewEventUserStrip()
 		if filter.OK(data, strip) {
-			users[uid] = data.strip(strip)
+			users[uid] = data.Strip(strip)
 		}
 	}
 
@@ -207,7 +218,7 @@ func (ins eventHandler) calculate(ctx *swe.Context, taskCtx async_task.TaskConte
 		uids = append(uids, uid)
 	}
 	sort.Slice(uids, func(i, j int) bool {
-		return users[uids[i]].sendTs < users[uids[j]].sendTs
+		return users[uids[i]].SendTs < users[uids[j]].SendTs
 	})
 
 	data := make([]db.RewardUser, 0, len(users))
@@ -215,9 +226,9 @@ func (ins eventHandler) calculate(ctx *swe.Context, taskCtx async_task.TaskConte
 		data = append(data, db.RewardUser{
 			EventID:  evtID,
 			UID:      uid,
-			UserName: users[uid].name,
-			Time:     users[uid].sendTs,
-			Columns:  users[uid].column(),
+			UserName: users[uid].Name,
+			Time:     users[uid].SendTs,
+			Columns:  users[uid].Column(),
 		})
 	}
 
@@ -233,7 +244,7 @@ func (ins eventHandler) calculate(ctx *swe.Context, taskCtx async_task.TaskConte
 	for _, uid := range uids {
 		dd = append(dd, db.DDInfo{
 			UID:        uid,
-			UserName:   users[uid].name,
+			UserName:   users[uid].Name,
 			AccessCode: db.GetDDInfoDAL().GenerateAccessCode(nowTs, evtID, uid),
 		})
 	}
@@ -304,4 +315,215 @@ func (ins eventHandler) delete(ctx *swe.Context, req *bs.IDReq) (*bs.Nothing, sw
 		}
 	}
 	return &bs.Nothing{}, nil
+}
+
+func (ins eventHandler) userList(ctx *swe.Context, req *bs.EventUserListReq) (*bs.PageRsp, swe.SweError) {
+	st, _ := session.GetStreamerSession(ctx)
+	exist, err := db.GetRewardEventDAL().Exist(ctx, req.EventID, st.RoomID)
+	if err != nil {
+		swe.CtxLogger(ctx).Error("query event %d error %v", req.EventID, err)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
+	}
+	if !exist {
+		swe.CtxLogger(ctx).Error("query event %d not exist", req.EventID)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, fmt.Errorf("event not found"))
+	}
+
+	count, users, err := db.GetRewardEventDAL().UserPage(ctx, req.EventID, (req.Page-1)*req.Size, req.Size)
+	if err != nil {
+		swe.CtxLogger(ctx).Error("query user list for event %d error %v", req.EventID, err)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
+	}
+	ret := &bs.PageRsp{Count: count, List: []any{}}
+
+	json := jsoniter.ConfigCompatibleWithStandardLibrary
+	for _, item := range users {
+		user := bs.EventUserListItem{
+			UID:   item.UID,
+			Name:  item.UserName,
+			Time:  utils.TimeToCSTString(item.Time),
+			Cols:  map[string]any{},
+			Block: item.Blocked != 0,
+		}
+		json.UnmarshalFromString(item.Columns, &user.Cols)
+		ret.List = append(ret.List, user)
+	}
+
+	return ret, nil
+}
+
+func (ins eventHandler) blockUser(ctx *swe.Context, req *bs.EventUIDReq) (*bs.Nothing, swe.SweError) {
+	st, _ := session.GetStreamerSession(ctx)
+	exist, err := db.GetRewardEventDAL().Exist(ctx, req.EventID, st.RoomID)
+	if err != nil {
+		swe.CtxLogger(ctx).Error("query event %d error %v", req.EventID, err)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
+	}
+	if !exist {
+		swe.CtxLogger(ctx).Error("query event %d not exist", req.EventID)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, fmt.Errorf("event not found"))
+	}
+
+	ok, err := db.GetRewardEventDAL().BlockUser(ctx, req.EventID, req.UID, true)
+	if err != nil {
+		swe.CtxLogger(ctx).Error("block user %d for %d error %v", req.UID, req.EventID, err)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
+	}
+	if !ok {
+		swe.CtxLogger(ctx).Error("block user %d for %d failed: user not found", req.UID, req.EventID)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, fmt.Errorf("user not found"))
+	}
+
+	return &bs.Nothing{}, nil
+}
+
+func (ins eventHandler) unblockUser(ctx *swe.Context, req *bs.EventUIDReq) (*bs.Nothing, swe.SweError) {
+	st, _ := session.GetStreamerSession(ctx)
+	exist, err := db.GetRewardEventDAL().Exist(ctx, req.EventID, st.RoomID)
+	if err != nil {
+		swe.CtxLogger(ctx).Error("query event %d error %v", req.EventID, err)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
+	}
+	if !exist {
+		swe.CtxLogger(ctx).Error("query event %d not exist", req.EventID)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, fmt.Errorf("event not found"))
+	}
+
+	ok, err := db.GetRewardEventDAL().BlockUser(ctx, req.EventID, req.UID, false)
+	if err != nil {
+		swe.CtxLogger(ctx).Error("block user %d for %d error %v", req.UID, req.EventID, err)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
+	}
+	if !ok {
+		swe.CtxLogger(ctx).Error("block user %d for %d failed: user not found", req.UID, req.EventID)
+		return nil, swe.Error(EC_GENERIC_DB_FAIL, fmt.Errorf("user not found"))
+	}
+
+	return &bs.Nothing{}, nil
+}
+
+func (ins eventHandler) download(ctx *swe.Context) {
+	logger := swe.CtxLogger(ctx)
+	req := bs.IDReq{}
+	if err := swe.DecodeForm(ctx.Request, &req); err != nil {
+		ctx.Response.WriteHeader(http.StatusBadRequest)
+		ctx.Response.Write([]byte(err.Error()))
+		return
+	}
+
+	// query event
+	st, _ := session.GetStreamerSession(ctx)
+	event, err := db.GetRewardEventDAL().GetByRoomID(ctx, req.ID, st.RoomID)
+	if err != nil {
+		logger.Error("query event %d error %v", req.ID, err)
+		http.NotFound(ctx.Response, ctx.Request)
+		return
+	}
+	if event == nil {
+		logger.Error("query event %d not exist", req.ID)
+		http.NotFound(ctx.Response, ctx.Request)
+		return
+	}
+	if event.Status != db.EVENT_READY {
+		logger.Error("event %d not ready", req.ID)
+		ctx.Response.WriteHeader(http.StatusBadRequest)
+		ctx.Response.Write([]byte(`event not ready`))
+		return
+	}
+
+	// get users
+	users, err := db.GetRewardEventDAL().Users(ctx, req.ID)
+	if err != nil {
+		logger.Error("load users for event %d failed: %v", req.ID, err)
+		ctx.Response.WriteHeader(http.StatusInternalServerError)
+		ctx.Response.Write([]byte(err.Error()))
+		return
+	}
+
+	// get user public keys
+	uids := make([]int64, 0, len(users))
+	for _, item := range users {
+		uids = append(uids, item.UID)
+	}
+	keyMap, err := db.GetDDInfoDAL().GetPublicKeys(ctx, uids)
+	if err != nil {
+		logger.Error("query public keys for users in event %d failed: %v", req.ID, err)
+		ctx.Response.WriteHeader(http.StatusInternalServerError)
+		ctx.Response.Write([]byte(err.Error()))
+		return
+	}
+
+	// convert users & decrypt user address
+	userDatas := make([]*event_calc.UserData, 0, len(users))
+	addrs := event_calc.AddrMap{}
+	for _, item := range users {
+		data, err := event_calc.EventUserfromDB(&item)
+		if err != nil {
+			logger.Error("convert user %d for event %d failed: %v, skip user ...", item.UID, req.ID, err)
+			continue
+		}
+		userDatas = append(userDatas, data)
+		if key, ok := keyMap[item.UID]; ok {
+			addr, err := db.DecryptUserAddress(ctx, key, item.AddressInfo)
+			if err != nil {
+				logger.Error("decrypt address info for user %d in event %d failed: %v", item.UID, req.ID, err)
+			} else {
+				addrs[item.UID] = addr
+			}
+		}
+	}
+	ctx.Put(event_calc.CTX_KEY_ADDR, addrs)
+
+	// decode condition
+	cond := bs.EventCondition{}
+	json := jsoniter.ConfigCompatibleWithStandardLibrary
+	err = json.UnmarshalFromString(event.Conditions, &cond)
+	if err != nil {
+		logger.Error("decode condition failed: %v", err)
+		ctx.Response.WriteHeader(http.StatusInternalServerError)
+		ctx.Response.Write([]byte(err.Error()))
+		return
+	}
+	err = cond.Validate(ctx)
+	if err != nil {
+		logger.Error("validate condition failed: %v", err)
+		ctx.Response.WriteHeader(http.StatusInternalServerError)
+		ctx.Response.Write([]byte(err.Error()))
+		return
+	}
+
+	// generate csv lines
+	lines := event_calc.Table(ctx, userDatas, event_calc.BuildPickers(ctx, &cond))
+	csvData := bytes.Buffer{}
+	csvData.Write([]byte{0xEF, 0xBB, 0xBF}) // UTF8 BOM
+	err = csv.NewWriter(&csvData).WriteAll(lines)
+	if err != nil {
+		logger.Error("write csv data failed: %v", err)
+		ctx.Response.WriteHeader(http.StatusInternalServerError)
+		ctx.Response.Write([]byte(err.Error()))
+		return
+	}
+
+	// generate file name
+	fileName := filterFileName(strings.Join([]string{st.StreamerName, event.EventName}, "_"))
+
+	// set header & write csv data
+	ctx.Response.Header().Set("Content-Type", "application/octet-stream")
+	ctx.Response.Header().Set("Content-Disposition", fmt.Sprintf(`inline; filename="%s.csv"`, fileName))
+	ctx.Response.Write(csvData.Bytes())
+}
+
+func filterFileName(value string) string {
+	ret := strings.Builder{}
+
+	for _, ch := range value {
+		switch ch {
+		case '<', '>', ':', '"', '\'', '/', '\\', '|', '?', '*':
+			ret.WriteByte('_')
+		default:
+			ret.WriteRune(ch)
+		}
+	}
+
+	return ret.String()
 }

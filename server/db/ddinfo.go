@@ -7,9 +7,12 @@ import (
 	"encoding/base64"
 	"encoding/binary"
 
+	"github.com/zerozwt/octant/server/utils"
 	"github.com/zerozwt/swe"
 	"gorm.io/gorm/clause"
 )
+
+type PublicKeyMap map[int64][]byte
 
 type DDInfo struct {
 	UID        int64  `gorm:"primaryKey;column:uid"`
@@ -48,4 +51,28 @@ func (dal *DDInfoDAL) GenerateAccessCode(ts, eventID, uid int64) string {
 	binary.BigEndian.PutUint64(buf[16:], uint64(uid))
 	dal.enc.Encrypt(buf[8:], buf[8:])
 	return base64.RawURLEncoding.EncodeToString(buf[:])
+}
+
+func (dal *DDInfoDAL) GetPublicKeys(ctx *swe.Context, uids []int64) (PublicKeyMap, error) {
+	ret := PublicKeyMap{}
+	if len(uids) == 0 {
+		return ret, nil
+	}
+
+	tmp := []DDInfo{}
+	err := getInstance(ctx).Where("uid in ?", uids).Select("uid", "public_key").Find(&tmp).Error
+
+	for _, item := range tmp {
+		if len(item.PublicKey) == 0 {
+			continue
+		}
+		key, err2 := utils.Base64Decode(item.PublicKey)
+		if err2 != nil {
+			swe.CtxLogger(ctx).Error("decode uid %d public key failed: %v", item.UID, err2)
+			continue
+		}
+		ret[item.UID] = key
+	}
+
+	return ret, err
 }
