@@ -85,11 +85,15 @@ func (dal GiftDAL) Infos(ctx *swe.Context) (ret []GiftInfo, err error) {
 }
 
 func (dal GiftDAL) Range(ctx *swe.Context, roomID, tsBegin, tsEnd int64) ([]*GiftRecord, error) {
-	ret := []*GiftRecord{}
+	tmp := []GiftRecord{}
 	tx := getInstance(ctx)
 	tx = tx.Where("room_id = ?", roomID)
 	tx = tx.Where("send_time between ? and ?", tsBegin, tsEnd)
 	tx = tx.Order("send_time")
-	err := tx.Find(&ret).Error
+	err := tx.Find(&tmp).Error
+	ret := make([]*GiftRecord, 0, len(tmp))
+	for idx := range tmp {
+		ret = append(ret, &tmp[idx])
+	}
 	return ret, err
 }

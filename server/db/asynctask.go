@@ -31,9 +31,13 @@ type AsyncTaskDAL struct{}
 func GetAsyncTaskDAL() AsyncTaskDAL { return AsyncTaskDAL{} }
 
 func (dal AsyncTaskDAL) All(ctx *swe.Context) ([]*AsyncTask, error) {
-	ret := []*AsyncTask{}
+	tmp := []AsyncTask{}
 	tx := getInstance(ctx).Where("status in ?", []int{ASYNC_TASK_IDLE, ASYNC_TASK_RUNNING})
-	err := tx.Find(&ret).Error
+	err := tx.Find(&tmp).Error
+	ret := make([]*AsyncTask, 0, len(tmp))
+	for idx := range tmp {
+		ret = append(ret, &tmp[idx])
+	}
 	return ret, err
 }
 
