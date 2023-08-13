@@ -223,7 +223,7 @@ func (p recvAddrPicker) Header(ctx *swe.Context) string { return "收件地址" 
 func BuildPickers(ctx *swe.Context, validatedCondition *bs.EventCondition) []Picker {
 	ret := []Picker{uidPicker{}, namePicker{}}
 
-	tr := bs.ConditionTimeRange{}
+	tr := bs.ConditionTimeRange{Range: map[string]bs.TimeRange{}}
 	validatedCondition.CalculateRange(&tr)
 
 	if _, ok := tr.Range["gift"]; ok {

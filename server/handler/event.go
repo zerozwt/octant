@@ -140,7 +140,7 @@ func (ins eventHandler) calculate(ctx *swe.Context, taskCtx async_task.TaskConte
 	logger.Info("loading needed data for event %d", evtID)
 
 	// load needed data
-	timeRange := bs.ConditionTimeRange{}
+	timeRange := bs.ConditionTimeRange{Range: map[string]bs.TimeRange{}}
 	cond.CalculateRange(&timeRange)
 	users := map[int64]*event_calc.UserData{}
 
