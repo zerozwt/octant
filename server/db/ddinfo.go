@@ -104,3 +104,20 @@ func (dal *DDInfoDAL) SetKeyPair(ctx *swe.Context, info *DDInfo) error {
 	}
 	return getInstance(ctx).Clauses(cc).Create(info).Error
 }
+
+func (dal *DDInfoDAL) BatchGet(ctx *swe.Context, uids []int64) (map[int64]*DDInfo, error) {
+	if len(uids) == 0 {
+		return map[int64]*DDInfo{}, nil
+	}
+
+	tmp := []DDInfo{}
+	err := getInstance(ctx).Where("uid in ?", uids).Find(&tmp).Error
+
+	ret := make(map[int64]*DDInfo, len(tmp))
+	for idx := range tmp {
+		item := &tmp[idx]
+		ret[item.UID] = item
+	}
+
+	return ret, err
+}
