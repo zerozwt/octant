@@ -199,14 +199,17 @@ func (e *executor) exec(ctx *swe.Context) {
 	// get stat and update task status
 	stat, err := db.GetDirectMsgDAL().Stats(ctx, e.taskID)
 	if err != nil {
-		logger.Info("direct msg task %d stat failed: %v", e.taskID, err)
+		logger.Error("direct msg task %d stat failed: %v", e.taskID, err)
 		db.GetDirectMsgDAL().UpdateStatus(ctx, e.taskID, db.DM_TASK_STATUS_PAUSED)
 		return
 	}
 
 	if stat.NotSend == 0 && stat.Fail == 0 {
+		logger.Info("direct msg task %d all done", e.taskID)
 		db.GetDirectMsgDAL().UpdateStatus(ctx, e.taskID, db.DM_TASK_STATUS_DONE)
 	} else {
+		logger.Info("direct msg task %d partially done: done[%d] fail[%d] not_sent[%d]",
+			e.taskID, stat.Done, stat.Fail, stat.NotSend)
 		db.GetDirectMsgDAL().UpdateStatus(ctx, e.taskID, db.DM_TASK_STATUS_PAUSED)
 	}
 }
