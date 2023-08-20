@@ -5,7 +5,7 @@ go 1.20
 require (
 	github.com/glebarez/sqlite v1.8.0
 	github.com/json-iterator/go v1.1.12
-	github.com/zerozwt/BLiveDanmaku v1.0.11
+	github.com/zerozwt/BLiveDanmaku v1.0.12
 	github.com/zerozwt/etcdutil v1.0.0
 	github.com/zerozwt/swe v1.0.14
 	go.etcd.io/etcd/client/v3 v3.5.9

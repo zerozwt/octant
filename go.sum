@@ -101,6 +101,8 @@ github.com/yuin/goldmark v1.2.1/go.mod h1:3hX8gzYuyVAZsxl0MRgGTJEmQBFcNTphYh9dec
 github.com/yuin/goldmark v1.3.5/go.mod h1:mwnBkeHKe2W/ZEtQ+71ViKU8L12m81fl3OWwC1Zlc8k=
 github.com/zerozwt/BLiveDanmaku v1.0.11 h1:zt2D4bnx28Q4Lf/EH2Q8/YjLd6LK1MpJrUYQ8Eur/kY=
 github.com/zerozwt/BLiveDanmaku v1.0.11/go.mod h1:/Fdagq4dLTRsmx3jZZeJt83qUSdxJbcnMwHfOYSViTk=
+github.com/zerozwt/BLiveDanmaku v1.0.12 h1:dYw4htEoeUfCvTxoTAMzGclcHq65g7A6y4GTKjq5dgk=
+github.com/zerozwt/BLiveDanmaku v1.0.12/go.mod h1:/Fdagq4dLTRsmx3jZZeJt83qUSdxJbcnMwHfOYSViTk=
 github.com/zerozwt/etcdutil v1.0.0 h1:48I/F6WpQhb8GPCRMXO7RMHhZszm5YR/N//FUlgxaIg=
 github.com/zerozwt/etcdutil v1.0.0/go.mod h1:6fdkpT7ouJzMYiesStHjJT8wFuyMLwEo9UqkZTVG7gM=
 github.com/zerozwt/swe v1.0.14 h1:FnzQZE2owE8JbUmJDbtZ0DEnVWuvmjEhdEd3A/1Hqto=
