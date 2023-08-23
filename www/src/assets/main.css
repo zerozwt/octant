@@ -1,0 +1,12 @@
+@import './base.css';
+
+#app {
+  max-width: 100%;
+  margin: 0 auto;
+
+  font-weight: normal;
+
+  height: 100%;
+  display: flex;
+  flex-flow: column;
+}
