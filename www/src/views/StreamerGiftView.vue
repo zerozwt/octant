@@ -1,5 +1,5 @@
 <template>
-    <StreamerFrame menu-value="member"><SimpleSearch type="member"/></StreamerFrame>
+    <StreamerFrame menu-value="gift"><SimpleSearch type="gift"/></StreamerFrame>
 </template>
 
 <script setup>

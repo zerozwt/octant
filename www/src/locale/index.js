@@ -62,6 +62,14 @@ const zhCN = {
             "活动管理",
             "私信群发",
         ],
+        Data: {
+            Cols: ["UID", "用户名", "赠送时间"],
+            Member: ["总督", "提督", "舰长"],
+            TimeRange: "时间范围（北京时间）",
+            SCContent: "醒目留言内容",
+            MemberLevel: "大航海等级",
+            Search: "搜索",
+        },
     },
 };
 
@@ -130,6 +138,14 @@ const enUS = {
             "Activities",
             "Direct messages",
         ],
+        Data: {
+            Cols: ["UID", "User name", "Time"],
+            Member: ["Soutoku(总督)", "Teitoku(提督)", "Kanchou(舰长)"],
+            TimeRange: "Time range (China Standard Time)",
+            SCContent: "Super chat content",
+            MemberLevel: "Membership level",
+            Search: "Search",
+        },
     },
 };
 
@@ -197,6 +213,14 @@ const jaJP = {
             "イベント管理",
             "DM管理",
         ],
+        Data: {
+            Cols: ["UID", "ユーザー名", "贈り時間"],
+            Member: ["総督", "提督", "艦長"],
+            TimeRange: "時間帯（中国時間）",
+            SCContent: "スーパーチャット内容",
+            MemberLevel: "メンバーシップレベル",
+            Search: "検索",
+        },
     },
 };
 

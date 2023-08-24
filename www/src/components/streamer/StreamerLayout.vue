@@ -4,7 +4,7 @@
             <n-menu :value="menuValue" :options="opts" @update-value="onMenu" :default-expand-all="true"/>
         </n-layout-sider>
         <n-layout-content>
-            <slot></slot>
+            <div class="streamer-layout-container"><slot></slot></div>
         </n-layout-content>
     </n-layout>
 </template>
@@ -69,5 +69,10 @@ let onMenu = (key, item) => {
 .n-layout {
     min-height: 100%;
     height: 100%;
+}
+.streamer-layout-container {
+    min-height: 100%;
+    height: 100%;
+    padding: 16px;
 }
 </style>

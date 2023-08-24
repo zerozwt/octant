@@ -27,6 +27,16 @@ const router = createRouter({
       name: "member",
       component: () => import("../views/StreamerMemberView.vue"),
     },
+    {
+      path: '/streamer/data/sc',
+      name: "sc",
+      component: () => import("../views/StreamerSuperchatView.vue"),
+    },
+    {
+      path: '/streamer/data/gift',
+      name: "gift",
+      component: () => import("../views/StreamerGiftView.vue"),
+    },
   ]
 })
 
