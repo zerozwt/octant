@@ -48,7 +48,7 @@ func (dal StreamerDAL) Insert(ctx *swe.Context, data *Streamer, upsert bool) (in
 	cc := clause.OnConflict{DoNothing: true}
 	if upsert {
 		cc = clause.OnConflict{
-			Columns:   []clause.Column{{Name: "room_id"}, {Name: "account_name"}},
+			Columns:   []clause.Column{{Name: "room_id"}},
 			DoUpdates: clause.AssignmentColumns([]string{"private_key", "public_key"}),
 		}
 	}

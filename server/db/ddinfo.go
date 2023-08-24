@@ -99,7 +99,7 @@ func (dal *DDInfoDAL) Get(ctx *swe.Context, uid int64) (*DDInfo, error) {
 
 func (dal *DDInfoDAL) SetKeyPair(ctx *swe.Context, info *DDInfo) error {
 	cc := clause.OnConflict{
-		Columns:   []clause.Column{{Name: "uid"}, {Name: "access_code"}},
+		Columns:   []clause.Column{{Name: "uid"}},
 		DoUpdates: clause.AssignmentColumns([]string{"private_key", "public_key"}),
 	}
 	return getInstance(ctx).Clauses(cc).Create(info).Error
