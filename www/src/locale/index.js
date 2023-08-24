@@ -28,6 +28,25 @@ const zhCN = {
     },
     Admin: {
         Name: "管理员",
+        Streamer: {
+            Title: "主播管理",
+            Add: "添加主播",
+            Cols: ["直播间ID", "主播名称", "账号名称", "操作"],
+            Reset: "重置密码",
+            Delete: "删除主播",
+            DelConfirm: "确定要删除这名主播？",
+            AddRoom: {
+                ID: "直播间号码：",
+                Name: "账户名：",
+                Pass: "初始密码：",
+                Pass2: "再次输入初始密码：",
+                Confirm: "确定",
+            },
+            ResetPass: {
+                Warn: "重置密码后，这名主播的观众需要重新填写收货地址信息。",
+                Name: "主播名称：",
+            },
+        },
     },
 };
 
@@ -61,6 +80,26 @@ const enUS = {
     },
     Admin: {
         Name: "Administrator",
+        Streamer: {
+            Title: "Streamers",
+            Add: "Add live streamer",
+            Cols: ["Live room ID", "Streamer name", "Account", "Operation"],
+            Reset: "Reset Password",
+            Delete: "Delete",
+            DelConfirm: "Are you sure to delete this streamer?",
+            InputRoomID: "Live room ID:",
+            AddRoom: {
+                ID: "Live room ID:",
+                Name: "Account:",
+                Pass: "Initial password:",
+                Pass2: "Repeat initial password:",
+                Confirm: "Confirm",
+            },
+            ResetPass: {
+                Warn: "After resetting password, audiences' delivery addresses have to be gathered again.",
+                Name: "Live streamer:",
+            },
+        },
     },
 };
 
@@ -87,13 +126,32 @@ const jaJP = {
         LoginPane: {
             Pass: "パスワード：",
             Admin: {
-                AlreadyLogin: "管理人は既に",
+                AlreadyLogin: "管理人は既にログインした",
                 Jump: "管理画面へ",
             },
         },
     },
     Admin: {
         Name: "管理人",
+        Streamer: {
+            Title: "配信者管理",
+            Add: "配信者を追加する",
+            Cols: ["配信部屋ID", "配信者", "アカウント", "操作"],
+            Reset: "パスワードをリセット",
+            Delete: "デリート",
+            DelConfirm: "この配信者を消去しますか？",
+            AddRoom: {
+                ID: "配信部屋番号：",
+                Name: "ユーザー名：",
+                Pass: "初期パスワード：",
+                Pass2: "初期パスワード再度入力：",
+                Confirm: "OK",
+            },
+            ResetPass: {
+                Warn: "パスワードがリセットされた後、この配信者のリスナーさん達の届け先情報を再収集する必要があります。",
+                Name: "配信者：",
+            },
+        },
     },
 };
 

@@ -1,15 +1,17 @@
 <template>
     <div class="header">
-        <div></div>
+        <div><img alt="Octant logo" class="logo" src="/logo.png" width="48" height="48"/></div>
+        <div>Octant</div>
+        <div class="header-bar"></div>
         <div class="slot">
             <n-config-provider :locale="locale" :date-locale="dateLocale">
                 <n-message-provider><slot name="header"></slot></n-message-provider>
             </n-config-provider>
         </div>
         <div>
-            <n-dropdown :options="menuOpts" @select="onLangSelete">
+            <n-popselect :options="menuOpts" trigger="click" @update:value="onLangSelete" :value="lang">
                 <n-button quaternary>{{ menuText }}</n-button>
-            </n-dropdown>
+            </n-popselect>
         </div>
     </div>
     <div class="content">
@@ -24,7 +26,7 @@
 
 <script setup>
 import { ref, computed, provide, reactive } from 'vue'
-import { NConfigProvider, NDropdown, NButton, NMessageProvider } from 'naive-ui'
+import { NConfigProvider, NButton, NMessageProvider, NPopselect } from 'naive-ui'
 import {zhCN, dateZhCN, enUS, dateEnUS, jaJP, dateJaJP} from 'naive-ui'
 import {loadCache, defaultLang, defaultLocaleObj, localeObj} from '@/locale'
 
@@ -52,9 +54,9 @@ let dateLocale = computed(() => {
 })
 
 let menuOpts = [
-    {label: "中文", key: "zh-CN"},
-    {label: "English", key: "en-US"},
-    {label: "日本語", key: "ja-JP"},
+    {label: "中文", value: "zh-CN"},
+    {label: "English", value: "en-US"},
+    {label: "日本語", value: "ja-JP"},
 ]
 
 let onLangSelete = (key) => {
@@ -74,7 +76,7 @@ let onLangSelete = (key) => {
     place-items: center;
 }
 
-.header > div:first-child {
+.header-bar {
     flex-grow: 1;
 }
 

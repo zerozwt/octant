@@ -55,8 +55,8 @@ let onChangePass = () => {
             message.error(`[${data.code}] ERROR: ${data.msg}`)
             return
         }
-    }).catch(err => message.error(JSON.stringify(err))).finally(() => {
         onShow(false)
+    }).catch(err => message.error(JSON.stringify(err))).finally(() => {
         loading.value = false
     })
 }
