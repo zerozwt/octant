@@ -133,7 +133,7 @@ let loadData = (page, size) => {
     let req = {
         datasource: props.type,
         page: page,
-        size: size,
+        size: 10,
         start_time: renderTime(timeRange.value[0]),
         end_time: renderTime(timeRange.value[1]),
         filter: {

@@ -40,7 +40,7 @@ func (dal MemberDAL) Page(ctx *swe.Context, roomID, tsBegin, tsEnd int64, offset
 		tx = tx.Where("sender_uid = ?", uid)
 	}
 	if len(name) > 0 {
-		tx = tx.Where("sender_name like %?%", name)
+		tx = tx.Where("sender_name like ?", "%"+name+"%")
 	}
 	if len(level) > 0 {
 		tx = tx.Where("level in ?", level)

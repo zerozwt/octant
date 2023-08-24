@@ -44,10 +44,10 @@ func (dal SCDal) Page(ctx *swe.Context, roomID, tsBegin, tsEnd int64, offset, li
 		tx = tx.Where("sender_uid = ?", uid)
 	}
 	if len(name) > 0 {
-		tx = tx.Where("sender_name like %?%", name)
+		tx = tx.Where("sender_name like ?", "%"+name+"%")
 	}
 	if len(content) > 0 {
-		tx = tx.Where("content like %?%", content)
+		tx = tx.Where("content like ?", "%"+content+"%")
 	}
 
 	count := 0

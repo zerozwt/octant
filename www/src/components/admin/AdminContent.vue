@@ -92,7 +92,7 @@ let tableCols = computed(() => {
 
 let loadData = (page, size) => {
     loading.value = true
-    API.get("/api/admin/streamer/list", {params: {page: page, size: size}}).then(rsp => {
+    API.get("/api/admin/streamer/list", {params: {page: page, size: 10}}).then(rsp => {
         let data = rsp.data
         if (data.code != 0) {
             message.error(`[${data.code}] ERROR: ${data.msg}`)
