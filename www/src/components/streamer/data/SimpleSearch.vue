@@ -1,6 +1,6 @@
 <template>
     <n-card :title="i18n.text.Streamer.Menu[0]" :segmented="{content: true}">
-        <n-grid :cols="5" y-gap="8">
+        <n-grid :cols="5" x-gap="8" y-gap="8">
             <n-gi><div>{{ i18n.text.Streamer.Data.TimeRange }}</div></n-gi>
             <n-gi :span="4"><div class="filter-var"><n-date-picker v-model:value="timeRange" type="datetimerange"/></div></n-gi>
             <n-gi><div>{{ i18n.text.Streamer.Data.Cols[0] }}</div></n-gi>
