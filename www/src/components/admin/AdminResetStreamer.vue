@@ -49,7 +49,7 @@ let onShow = (value) => {
 
 let commit = () => {
     loading.value = true
-    API.post("/api/admin/streamer/reset", {room_id: Number(props.streamer.room_id), password: Pass.value}).then(rsp => {
+    API.post("/api/admin/streamer/reset", {id: Number(props.streamer.room_id), password: Pass.value}).then(rsp => {
         let data = rsp.data
         if (data.code != 0) {
             message.error(`[${data.code}] ERROR: ${data.msg}`)
