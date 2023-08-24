@@ -14,15 +14,20 @@ const zhCN = {
             "自由设定规则，自动计算观众名单",
             "对名单内观众群发私信",
             "收集观众收货信息",
-            "一键导出下载名单",
+            "一键导出观众名单",
         ],
         LoginButtonText: "登陆",
         LoginTypes: ["主播", "观众", "管理员"],
         LoginPane: {
+            Name: "账户名：",
             Pass: "密码：",
             Admin: {
                 AlreadyLogin: "当前管理员已登录",
                 Jump: "进入管理页面",
+            },
+            Streamer: {
+                Already: (name) => `${name}，欢迎再次光临Octant`,
+                Jump: "进入系统",
             },
         },
     },
@@ -48,6 +53,16 @@ const zhCN = {
             },
         },
     },
+    Streamer: {
+        Menu: [
+            "数据查询",
+            "大航海",
+            "醒目留言",
+            "礼物",
+            "活动管理",
+            "私信群发",
+        ],
+    },
 };
 
 const enUS = {
@@ -66,15 +81,20 @@ const enUS = {
             "自由设定规则，自动计算观众名单",
             "对名单内观众群发私信",
             "收集观众收货信息",
-            "一键导出下载名单",
+            "一键导出观众名单",
         ],
         LoginButtonText: "SIGN IN",
         LoginTypes: ["Streamer", "Audience", "Administrator"],
         LoginPane: {
+            Name: "Account:",
             Pass: "Password:",
             Admin: {
                 AlreadyLogin: "Administrator has already signed in",
                 Jump: "Go to admin panel",
+            },
+            Streamer: {
+                Already: (name) => `Dear ${name}, welcome back to Octant`,
+                Jump: "Enter dashboard",
             },
         },
     },
@@ -101,6 +121,16 @@ const enUS = {
             },
         },
     },
+    Streamer: {
+        Menu: [
+            "Data query",
+            "Membership",
+            "Super chat",
+            "Gift",
+            "Activities",
+            "Direct messages",
+        ],
+    },
 };
 
 const jaJP = {
@@ -119,15 +149,20 @@ const jaJP = {
             "自由设定规则，自动计算观众名单",
             "对名单内观众群发私信",
             "收集观众收货信息",
-            "一键导出下载名单",
+            "一键导出观众名单",
         ],
         LoginButtonText: "ログイン",
         LoginTypes: ["配信者", "リスナー", "管理人"],
         LoginPane: {
+            Name: "ユーザー名：",
             Pass: "パスワード：",
             Admin: {
                 AlreadyLogin: "管理人は既にログインした",
                 Jump: "管理画面へ",
+            },
+            Streamer: {
+                Already: (name) => `お帰りなさいませ、${name}様`,
+                Jump: "システムへ",
             },
         },
     },
@@ -152,6 +187,16 @@ const jaJP = {
                 Name: "配信者：",
             },
         },
+    },
+    Streamer: {
+        Menu: [
+            "データ検索",
+            "メンバーシップ",
+            "スーパーチャット",
+            "プレゼント",
+            "イベント管理",
+            "DM管理",
+        ],
     },
 };
 

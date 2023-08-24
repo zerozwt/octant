@@ -21,7 +21,12 @@ const router = createRouter({
       path: '/admin',
       name: "admin",
       component: () => import("../views/AdminView.vue"),
-    }
+    },
+    {
+      path: '/streamer/data/member',
+      name: "member",
+      component: () => import("../views/StreamerMemberView.vue"),
+    },
   ]
 })
 
