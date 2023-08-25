@@ -70,6 +70,13 @@ const zhCN = {
             MemberLevel: "大航海等级",
             Search: "搜索",
         },
+        Event: {
+            New: "创建活动",
+            ListCols: ["活动名称", "活动特典内容", "状态", "操作"],
+            ListOps: ["观众名单", "编辑信息", "删除活动"],
+            ListDelConfirm: "确定要删除这个活动？",
+            EvtStatus: ["数据收集中", "名单计算中", "名单计算错误", "名单计算完成"],
+        },
     },
 };
 
@@ -146,6 +153,13 @@ const enUS = {
             MemberLevel: "Membership level",
             Search: "Search",
         },
+        Event: {
+            New: "Create activity",
+            ListCols: ["Activity name", "Special offer content", "Status", "Operation"],
+            ListOps: ["Audience list", "Edit activity", "Delete"],
+            ListDelConfirm: "Are you sure to delete this activity?",
+            EvtStatus: ["Gathering data", "Calculating list", "Calculation error", "Ready"],
+        },
     },
 };
 
@@ -220,6 +234,13 @@ const jaJP = {
             SCContent: "スーパーチャット内容",
             MemberLevel: "メンバーシップレベル",
             Search: "検索",
+        },
+        Event: {
+            New: "イベントを開催する",
+            ListCols: ["イベント", "特典内容", "状態", "操作"],
+            ListOps: ["リスナー名簿", "情報変更", "デリート"],
+            ListDelConfirm: "このイベントを消去しますか？",
+            EvtStatus: ["データ収集中", "リスナー名簿計算中", "計算エラー", "名簿計算完了"],
         },
     },
 };

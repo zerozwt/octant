@@ -37,6 +37,21 @@ const router = createRouter({
       name: "gift",
       component: () => import("../views/StreamerGiftView.vue"),
     },
+    {
+      path: '/streamer/events',
+      name: "events",
+      component: () => import("../views/StreamerEventListView.vue"),
+    },
+    {
+      path: '/streamer/events/new',
+      name: "events_add",
+      component: () => import("../views/StreamerEventAddView.vue"),
+    },
+    {
+      path: '/streamer/event/:id',
+      name: "event_detail",
+      component: () => import("../views/StreamerEventDetailView.vue"),
+    },
   ]
 })
 

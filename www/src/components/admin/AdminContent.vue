@@ -73,6 +73,7 @@ let tableCols = computed(() => {
         {
             key: "room_id",
             title: i18n.text.Admin.Streamer.Cols[3],
+            width: 250,
             render(row) {
                 return h(NSpace, {}, () => [
                     h(NButton, {size: "tiny", type: "primary", onClick: () => {onResetPass(row)}}, () => i18n.text.Admin.Streamer.Reset),
@@ -100,7 +101,7 @@ let loadData = (page, size) => {
         }
         data = data.data
         tablePage.page = page
-        tablePage.pageCount = Math.ceil(data.count / size)
+        tablePage.pageCount = Math.ceil(data.count / 10)
         tablePage.itemCount = data.count
         tableData.value = data.list
     }).catch(err => message.error(JSON.stringify(err))).finally(() => {loading.value = false})
@@ -120,6 +121,7 @@ let showAdd = ref(false)
 .title {
     display: flex;
     margin-bottom: 16px;
+    place-items: center;
 }
 .title > div {
     flex-grow: 1;

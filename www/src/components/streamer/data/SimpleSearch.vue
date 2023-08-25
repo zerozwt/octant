@@ -175,7 +175,7 @@ let loadData = (page, size) => {
         }
         data = data.data
         tablePage.page = page
-        tablePage.pageCount = Math.ceil(data.count / size)
+        tablePage.pageCount = Math.ceil(data.count / 10)
         tablePage.itemCount = data.count
 
         let tmp = []

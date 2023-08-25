@@ -55,9 +55,10 @@ func (ins eventHandler) list(ctx *swe.Context, req *bs.PageReq) (*bs.PageRsp, sw
 	ret := &bs.PageRsp{Count: count, List: []any{}}
 	for _, item := range list {
 		ret.List = append(ret.List, map[string]any{
-			"id":     item.ID,
-			"name":   item.EventName,
-			"status": item.Status,
+			"id":      item.ID,
+			"name":    item.EventName,
+			"content": item.RewardContent,
+			"status":  item.Status,
 		})
 	}
 
