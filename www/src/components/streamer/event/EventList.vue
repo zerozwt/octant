@@ -25,7 +25,7 @@
             <p>{{ i18n.text.Streamer.Event.ListCols[0] }}</p>
             <n-input type="text" v-model:value="currEvent.name" />
             <p>{{ i18n.text.Streamer.Event.ListCols[1] }}</p>
-            <n-input type="text" v-model:value="currEvent.content" />
+            <n-input type="textarea" rows="8" v-model:value="currEvent.content" />
         </n-space>
         <template #action>
             <n-button type="primary" block strong @click="onUpdateEvent" :loading="editing" :disabled="editBtnDisable">{{ i18n.text.Admin.Streamer.AddRoom.Confirm }}</n-button>
