@@ -116,7 +116,7 @@ func (dal RewardEventDAL) Exist(ctx *swe.Context, id, roomID int64) (bool, error
 func (dal RewardEventDAL) UserPage(ctx *swe.Context, eventID int64, offset, limit int) (int, []RewardUser, error) {
 	ret := []RewardUser{}
 	tx := getInstance(ctx)
-	tx = tx.Where("event_id = ?", eventID)
+	tx = tx.Where("event_id = ?", eventID).Table("t_event_user")
 
 	count := 0
 	if err := newDBSession(ctx, tx).Select("count(*)").Scan(&count).Error; err != nil {
@@ -147,7 +147,7 @@ func (dal RewardEventDAL) Users(ctx *swe.Context, eventID int64) ([]RewardUser, 
 
 func (dal RewardEventDAL) UserRecords(ctx *swe.Context, uid int64, offset, limit int) (int, []RewardUser, error) {
 	ret := []RewardUser{}
-	tx := getInstance(ctx).Where("uid = ?", uid)
+	tx := getInstance(ctx).Where("uid = ?", uid).Table("t_event_user")
 
 	count := 0
 	err := newDBSession(ctx, tx).Select("count(*)").Scan(&count).Error

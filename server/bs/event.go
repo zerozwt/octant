@@ -95,6 +95,9 @@ func (c *EventCondition) Validate(ctx *swe.Context) error {
 				return fmt.Errorf("invalid guard level %d", level)
 			}
 		}
+		if c.Count < 1 {
+			return fmt.Errorf("invalid guard months")
+		}
 	}
 	return nil
 }

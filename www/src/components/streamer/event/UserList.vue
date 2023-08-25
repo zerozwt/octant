@@ -40,7 +40,7 @@ let blockUser = (row) => {
             message.error(`[${data.code}] ERROR: ${data.msg}`)
             return
         }
-    }).catch(err => message.error(JSON.stringify(err))).finally(() => {onPageChange(1)})
+    }).catch(err => message.error(JSON.stringify(err))).finally(() => {onPageChange(tablePage.page)})
 }
 
 const donateWidth = 320

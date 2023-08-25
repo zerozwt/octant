@@ -20,8 +20,8 @@ const CondTreeToReq = (node) => {
         start_time: dayjs.unix(node.timeRange[0]/1000).format("YYYYMMDDHHmmss"),
         end_time: dayjs.unix(node.timeRange[1]/1000).format("YYYYMMDDHHmmss"),
         mode: node.mode,
-        count: node.count ? 0 : Number(node.count),
-        gift_id: node.giftID ? 0 : Number(node.giftID),
+        count: node.count ? Number(node.count) : 0,
+        gift_id: node.giftID ? Number(node.giftID) : 0,
         guard_levels: levels,
     }
 }

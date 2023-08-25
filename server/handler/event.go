@@ -478,6 +478,9 @@ func (ins eventHandler) download(ctx *swe.Context) {
 	// get user public keys
 	uids := make([]int64, 0, len(users))
 	for _, item := range users {
+		if item.Blocked != 0 {
+			continue
+		}
 		uids = append(uids, item.UID)
 	}
 	keyMap, err := db.GetDDInfoDAL().GetPublicKeys(ctx, uids)
@@ -492,6 +495,9 @@ func (ins eventHandler) download(ctx *swe.Context) {
 	userDatas := make([]*event_calc.UserData, 0, len(users))
 	addrs := event_calc.AddrMap{}
 	for _, item := range users {
+		if item.Blocked != 0 {
+			continue
+		}
 		data, err := event_calc.EventUserfromDB(&item)
 		if err != nil {
 			logger.Error("convert user %d for event %d failed: %v, skip user ...", item.UID, req.ID, err)

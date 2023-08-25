@@ -72,7 +72,7 @@ func (dal DirectMsgDAL) Put(ctx *swe.Context, task *DMTask) error {
 func (dal DirectMsgDAL) Page(ctx *swe.Context, roomID int64, offset, limit int) (int, []DMTask, error) {
 	count := 0
 	ret := []DMTask{}
-	tx := getInstance(ctx).Where("room_id = ?", roomID)
+	tx := getInstance(ctx).Where("room_id = ?", roomID).Table("t_dm_task")
 
 	err := newDBSession(ctx, tx).Select("count(*)").Scan(&count).Error
 	if err != nil {
