@@ -11,6 +11,7 @@ type RewardEvent struct {
 	EventName     string `gorm:"type:string;size:256;column:name"`
 	RewardContent string `gorm:"type:TEXT;column:content"`
 	Conditions    string `gorm:"type:TEXT;column:conditions"`
+	Hidden        int    `gorm:"column:hidden"`
 	CreateTime    int64  `gorm:"index:idx_re_room;column:create_time"`
 	Status        int    `gorm:"column:status"`
 }
@@ -86,9 +87,9 @@ func (dal RewardEventDAL) PutUsers(ctx *swe.Context, users []RewardUser) error {
 	return getInstance(ctx).CreateInBatches(users, 500).Error
 }
 
-func (dal RewardEventDAL) UpdateEventInfo(ctx *swe.Context, id, roomID int64, name, content string) error {
-	return getInstance(ctx).Exec("update t_event set name = ? and content = ? where id = ? and room_id = ?",
-		name, content, id, roomID).Error
+func (dal RewardEventDAL) UpdateEventInfo(ctx *swe.Context, id, roomID int64, name, content string, hidden int) error {
+	return getInstance(ctx).Exec("update t_event set name = ? and content = ? where id = ? and room_id = ? and hidden = ?",
+		name, content, id, roomID, hidden).Error
 }
 
 func (dal RewardEventDAL) GetByRoomID(ctx *swe.Context, id, roomID int64) (*RewardEvent, error) {

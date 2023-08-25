@@ -72,10 +72,37 @@ const zhCN = {
         },
         Event: {
             New: "创建活动",
-            ListCols: ["活动名称", "活动特典内容", "状态", "操作"],
+            ListCols: ["活动名称", "活动特典内容", "隐藏活动", "状态", "操作"],
             ListOps: ["观众名单", "编辑信息", "删除活动"],
             ListDelConfirm: "确定要删除这个活动？",
             EvtStatus: ["数据收集中", "名单计算中", "名单计算错误", "名单计算完成"],
+            Add: {
+                Basic: "基本信息",
+                Cond: "参与条件",
+                Delete: "删除",
+                Hidden: "对观众隐藏本活动",
+                Group: {
+                    Title: "条件组",
+                    Content: ["满足以下", "条件"],
+                    Opts: ["任意", "全部"],
+                    Add: "添加条件",
+                    AddGroup: "添加条件组",
+                },
+                SC: {
+                    Content: ["金额达到", ""],
+                    Opts: ["累计", "单次"],
+                },
+                Member: {
+                    Count: "数量",
+                    Content: ["达到", "个月"],
+                    Opts: ["总共", "单次"],
+                },
+                Gift: {
+                    Count: "数量",
+                    Content: ["达到", "个"],
+                    Opts: ["总共", "单次"],
+                },
+            },
         },
     },
 };
@@ -155,10 +182,37 @@ const enUS = {
         },
         Event: {
             New: "Create activity",
-            ListCols: ["Activity name", "Special offer content", "Status", "Operation"],
+            ListCols: ["Activity name", "Special offer content", "Hidden activity", "Status", "Operation"],
             ListOps: ["Audience list", "Edit activity", "Delete"],
             ListDelConfirm: "Are you sure to delete this activity?",
             EvtStatus: ["Gathering data", "Calculating list", "Calculation error", "Ready"],
+            Add: {
+                Basic: "Basic information",
+                Cond: "Conditions",
+                Delete: "Delete",
+                Hidden: "This activity will be hidden from audiences",
+                Group: {
+                    Title: "Condition group",
+                    Content: ["Fulfil ", " of the following conditions"],
+                    Opts: ["anyone", "all"],
+                    Add: "Add condition",
+                    AddGroup: "Add condition group",
+                },
+                SC: {
+                    Content: ["reach", ""],
+                    Opts: ["Sum of all super chats", "Single super chat"],
+                },
+                Member: {
+                    Count: "Quantity",
+                    Content: ["", "months"],
+                    Opts: ["Total", "Single time"],
+                },
+                Gift: {
+                    Count: "Quantity",
+                    Content: ["", ""],
+                    Opts: ["Total", "Single time"],
+                },
+            },
         },
     },
 };
@@ -237,10 +291,37 @@ const jaJP = {
         },
         Event: {
             New: "イベントを開催する",
-            ListCols: ["イベント", "特典内容", "状態", "操作"],
+            ListCols: ["イベント名", "特典内容", "隠しイベント", "状態", "操作"],
             ListOps: ["リスナー名簿", "情報変更", "デリート"],
             ListDelConfirm: "このイベントを消去しますか？",
             EvtStatus: ["データ収集中", "リスナー名簿計算中", "計算エラー", "名簿計算完了"],
+            Add: {
+                Basic: "基本情報",
+                Cond: "参加条件",
+                Delete: "デリート",
+                Hidden: "このイベントをリスナーに隠す",
+                Group: {
+                    Title: "条件グループ",
+                    Content: ["下記の条件の", "を満たす"],
+                    Opts: ["どれ一つ", "全て"],
+                    Add: "条件を追加する",
+                    AddGroup: "条件グループを追加する",
+                },
+                SC: {
+                    Content: ["が", "以上になります"],
+                    Opts: ["全部のスーパーチャットの総合金額", "一個のスーパーチャットの金額"],
+                },
+                Member: {
+                    Count: "数",
+                    Content: ["で", "ヶ月分"],
+                    Opts: ["全部", "一回"],
+                },
+                Gift: {
+                    Count: "数",
+                    Content: ["で", "個分"],
+                    Opts: ["全部", "一回"],
+                },
+            },
         },
     },
 };

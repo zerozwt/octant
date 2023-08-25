@@ -58,6 +58,7 @@ func (ins eventHandler) list(ctx *swe.Context, req *bs.PageReq) (*bs.PageRsp, sw
 			"id":      item.ID,
 			"name":    item.EventName,
 			"content": item.RewardContent,
+			"hidden":  item.Hidden != 0,
 			"status":  item.Status,
 		})
 	}
@@ -72,6 +73,7 @@ func (ins eventHandler) add(ctx *swe.Context, req *bs.EventAddReq) (*bs.Nothing,
 		RoomID:        st.RoomID,
 		EventName:     req.Name,
 		RewardContent: req.Reward,
+		Hidden:        req.Hidden,
 		CreateTime:    time.Now().Unix(),
 		Status:        db.EVENT_IDLE,
 	}
@@ -267,7 +269,7 @@ func (ins eventHandler) calculate(ctx *swe.Context, taskCtx async_task.TaskConte
 
 func (ins eventHandler) modify(ctx *swe.Context, req *bs.EventModifyReq) (*bs.Nothing, swe.SweError) {
 	st, _ := session.GetStreamerSession(ctx)
-	if err := db.GetRewardEventDAL().UpdateEventInfo(ctx, req.ID, st.RoomID, req.Name, req.Reward); err != nil {
+	if err := db.GetRewardEventDAL().UpdateEventInfo(ctx, req.ID, st.RoomID, req.Name, req.Reward, req.Hidden); err != nil {
 		swe.CtxLogger(ctx).Error("update info for event %d error %v", req.ID, err)
 		return nil, swe.Error(EC_GENERIC_DB_FAIL, err)
 	}
@@ -291,6 +293,7 @@ func (ins eventHandler) detail(ctx *swe.Context, req *bs.IDReq) (*bs.EventDetail
 		Name:   event.EventName,
 		Reward: event.RewardContent,
 		Status: event.Status,
+		Hidden: event.Hidden != 0,
 	}
 
 	json := jsoniter.ConfigCompatibleWithStandardLibrary

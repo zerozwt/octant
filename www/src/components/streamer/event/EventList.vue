@@ -26,6 +26,7 @@
             <n-input type="text" v-model:value="currEvent.name" />
             <p>{{ i18n.text.Streamer.Event.ListCols[1] }}</p>
             <n-input type="textarea" rows="8" v-model:value="currEvent.content" />
+            <n-checkbox v-model:checked="currEvent.hidden">{{ i18n.text.Streamer.Event.Add.Hidden }}</n-checkbox>
         </n-space>
         <template #action>
             <n-button type="primary" block strong @click="onUpdateEvent" :loading="editing" :disabled="editBtnDisable">{{ i18n.text.Admin.Streamer.AddRoom.Confirm }}</n-button>
@@ -36,7 +37,7 @@
 <script setup>
 import {ref, reactive, inject, computed, h, onMounted} from 'vue'
 import {RouterLink} from 'vue-router'
-import {NButton, NSpace, NPopconfirm, NDataTable, useMessage, NModal, NInput} from 'naive-ui'
+import {NButton, NSpace, NPopconfirm, NDataTable, useMessage, NModal, NInput, NCheckbox} from 'naive-ui'
 import {APICaller} from '@/api'
 import router from "@/router"
 
@@ -56,6 +57,7 @@ let currEvent = reactive({
     id: 0,
     name: "",
     content: "",
+    hidden: false,
 })
 
 let showModal = ref(false)
@@ -68,12 +70,13 @@ let onEditEvent = (row) => {
     currEvent.id = row.id
     currEvent.name = row.name
     currEvent.content = row.content
+    currEvent.hidden = row.hidden
     showModal.value = true
 }
 
 let onUpdateEvent = () => {
     editing.value = true
-    API.post("/api/event/modify", {id: currEvent.id, name: currEvent.name, reward: currEvent.content}).then(rps => {
+    API.post("/api/event/modify", {id: currEvent.id, name: currEvent.name, reward: currEvent.content, hidden: currEvent.hidden ? 1 : 0}).then(rps => {
         let data = rsp.data
         if (data.code != 0) {
             message.error(`[${data.code}] ERROR: ${data.msg}`)
@@ -100,9 +103,10 @@ let tableCols = computed(() => {
     return [
         {key: "name", title: i18n.text.Streamer.Event.ListCols[0]},
         {key: "content", title: i18n.text.Streamer.Event.ListCols[1], ellipsis: {tooltip: true}},
+        {key: "hidden", title: i18n.text.Streamer.Event.ListCols[2], render(row) {return h("div", {}, row.hidden ? "YES": "")}},
         {
             key: "status",
-            title: i18n.text.Streamer.Event.ListCols[2],
+            title: i18n.text.Streamer.Event.ListCols[3],
             width: 300,
             render(row) {
                 return h("div", {class: `estatus_${row.status}`}, i18n.text.Streamer.Event.EvtStatus[row.status-1])
@@ -110,7 +114,7 @@ let tableCols = computed(() => {
         },
         {
             key: "ops",
-            title: i18n.text.Streamer.Event.ListCols[3],
+            title: i18n.text.Streamer.Event.ListCols[4],
             width: 300,
             render(row) {
                 return h(NSpace, {}, () => {

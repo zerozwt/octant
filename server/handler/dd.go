@@ -212,7 +212,10 @@ func (ins ddHandler) events(ctx *swe.Context, req *bs.PageReq) (*bs.PageRsp, swe
 	rids := []int64{}
 	evtMap := map[int64]*db.RewardEvent{}
 	for idx := range events {
-		rids = append(rids, events[idx].ID)
+		if events[idx].Hidden != 0 {
+			continue
+		}
+		rids = append(rids, events[idx].RoomID)
 		evtMap[events[idx].ID] = &events[idx]
 	}
 

@@ -142,6 +142,7 @@ func (c *EventCondition) CalculateRange(value *ConditionTimeRange) {
 type EventAddReq struct {
 	Name      string         `json:"name"`
 	Reward    string         `json:"reward"`
+	Hidden    int            `json:"hidden"`
 	Condition EventCondition `json:"conditions"`
 }
 
@@ -156,6 +157,7 @@ type EventModifyReq struct {
 	ID     int64  `json:"id"`
 	Name   string `json:"name"`
 	Reward string `json:"reward"`
+	Hidden int    `json:"hidden"`
 }
 
 func (req *EventModifyReq) Validate(ctx *swe.Context) error {
@@ -174,6 +176,7 @@ type EventDetailRsp struct {
 	Name      string         `json:"name"`
 	Reward    string         `json:"reward"`
 	Condition EventCondition `json:"conditions"`
+	Hidden    bool           `json:"hidden"`
 	Status    int            `json:"status"`
 }
 
