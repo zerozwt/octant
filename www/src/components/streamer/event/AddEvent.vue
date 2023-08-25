@@ -27,7 +27,7 @@ import {NButton, useMessage, NCard, NInput, NSpace, NCheckbox} from 'naive-ui'
 import CondTree from './CondTree.vue'
 import {APICaller} from '@/api'
 import router from "@/router"
-import {CondTreeToReq} from './cond'
+import {CondTreeToReq, CreateCondTreeHandler} from './cond'
 
 const API = APICaller(router)
 const i18n = inject("octant_locale")
@@ -49,38 +49,6 @@ let condTree = reactive({
 let nextCID = ref(1)
 
 let treeReady = computed(() => gifts.value.length > 1)
-
-let findNode = (id, node) => {
-    if (node.cid == id) return node
-    if (node.type == "and" || node.type == "or") {
-        for (let i = 0; i < node.subs.length; i++) {
-            let ret = findNode(id, node.subs[i])
-            if (ret) return ret
-        }
-    }
-    return null
-}
-
-let findFather = (id, node) => {
-    if (node.cid == id) return null
-    if (node.type == "and" || node.type == "or") {
-        for (let i = 0; i < node.subs.length; i++) {
-            if (node.subs[i].cid == id) return node
-            let ret = findFather(id, node.subs[i])
-            if (ret) return ret
-        }
-    }
-    return null
-}
-
-let removeChild = (node, cid) => {
-    if (!node) return
-    let tmp = []
-    node.subs.forEach((value) => {
-        if (value.cid != cid) {tmp.push(value)}
-    })
-    node.subs = tmp
-}
 
 let validate = (node) => {
     if (node.type == "and" || node.type == "or") {
@@ -108,53 +76,7 @@ let createDisabled = computed(() => {
     return name.value.length == 0 || content.value.length == 0 || !validate(condTree)
 })
 
-let treeEventHandler = {
-    onGroupChangeType(node, type) {
-        node.type = type
-    },
-    deleteNode(id) {
-        if (id <= 0) return
-        removeChild(findFather(id, condTree), id)
-    },
-    addSubGroup(node) {
-        node.subs.push({cid: nextCID.value++, type: "or", subs:[]})
-    },
-    addCond(node, type) {
-        node.subs.push({
-            cid: nextCID.value++,
-            type: type,
-            timeRange: [Date.now()-7*24*3600*1000, Date.now()],
-            mode: "total",
-            count: type == "sc" ? 0 : 1,
-            giftID: "",
-            member1: true,
-            member2: true,
-            member3: true,
-        })
-    },
-    updateTimeRange(node, value) {
-        node.timeRange = value
-    },
-    updateMode(node, value) {
-        node.mode = value
-    },
-    updateCount(node, value) {
-        node.count = value
-    },
-    updateMember1(node, value) {
-        node.member1 = value
-    },
-    updateMember2(node, value) {
-        node.member2 = value
-    },
-    updateMember3(node, value) {
-        node.member3 = value
-    },
-    updateGift(node, value) {
-        node.giftID = value
-    },
-}
-
+let treeEventHandler = CreateCondTreeHandler(condTree, nextCID)
 provide("octant_cte", treeEventHandler)
 
 onMounted(() => {

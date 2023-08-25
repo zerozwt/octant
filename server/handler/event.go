@@ -341,8 +341,8 @@ func (ins eventHandler) userList(ctx *swe.Context, req *bs.EventUserListReq) (*b
 	}
 	ret := &bs.PageRsp{Count: count, List: []any{}}
 
-	json := jsoniter.ConfigCompatibleWithStandardLibrary
 	for _, item := range users {
+		eu, _ := event_calc.EventUserfromDB(&item)
 		user := bs.EventUserListItem{
 			UID:   item.UID,
 			Name:  item.UserName,
@@ -350,7 +350,37 @@ func (ins eventHandler) userList(ctx *swe.Context, req *bs.EventUserListReq) (*b
 			Cols:  map[string]any{},
 			Block: item.Blocked != 0,
 		}
-		json.UnmarshalFromString(item.Columns, &user.Cols)
+		tmp := []any{}
+		for _, colItem := range eu.Gift {
+			tmp = append(tmp, map[string]any{
+				"time":      utils.TimeToCSTString(colItem.SendTime),
+				"gift_id":   colItem.GiftID,
+				"gift_name": colItem.GiftName,
+				"price":     colItem.GiftPrice,
+				"count":     colItem.GiftCount,
+			})
+		}
+		user.Cols["gift"] = tmp
+
+		tmp = []any{}
+		for _, colItem := range eu.SC {
+			tmp = append(tmp, map[string]any{
+				"time":    utils.TimeToCSTString(colItem.SendTime),
+				"price":   colItem.Price,
+				"content": colItem.Content,
+			})
+		}
+		user.Cols["sc"] = tmp
+
+		tmp = []any{}
+		for _, colItem := range eu.Member {
+			tmp = append(tmp, map[string]any{
+				"time":  utils.TimeToCSTString(colItem.SendTime),
+				"level": colItem.GuardLevel,
+				"count": colItem.Count,
+			})
+		}
+		user.Cols["member"] = tmp
 		ret.List = append(ret.List, user)
 	}
 

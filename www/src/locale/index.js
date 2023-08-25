@@ -103,6 +103,10 @@ const zhCN = {
                     Opts: ["总共", "单次"],
                 },
             },
+            Detail: {
+                Block: ["解除屏蔽", "屏蔽"],
+                Download: "下载名单",
+            },
         },
     },
 };
@@ -213,6 +217,10 @@ const enUS = {
                     Opts: ["Total", "Single time"],
                 },
             },
+            Detail: {
+                Block: ["Unblock", "Block"],
+                Download: "Download list",
+            },
         },
     },
 };
@@ -321,6 +329,10 @@ const jaJP = {
                     Content: ["で", "個分"],
                     Opts: ["全部", "一回"],
                 },
+            },
+            Detail: {
+                Block: ["ブロック解除", "ブロック"],
+                Download: "リスナー名簿をダウンロード",
             },
         },
     },

@@ -11,7 +11,6 @@
                     :options="groupOpts"
                     @update:value="(value) => {teh.onGroupChangeType(node, value)}"
                     style="max-width: 100px; margin: 0 8px;"
-                    :disabled="readonly"
                 />
                 <p>{{ i18n.text.Streamer.Event.Add.Group.Content[1] }}</p>
                 <div style="flex-grow: 1;"></div>
@@ -34,7 +33,7 @@
                 <n-gi><div>{{ i18n.text.Streamer.Data.TimeRange }}</div></n-gi>
                 <n-gi :span="valueCols">
                     <div class="cond-value">
-                        <n-date-picker type="datetimerange" :value="node.timeRange" @update:value="(value) => {teh.updateTimeRange(node, value)}" :disabled="readonly"/>
+                        <n-date-picker type="datetimerange" :value="node.timeRange" @update:value="(value) => {teh.updateTimeRange(node, value)}"/>
                     </div>
                 </n-gi>
                 <n-gi :span="totalCols" v-if="isSC">
@@ -43,10 +42,9 @@
                             :value="node.mode"
                             :options="scModeOpts"
                             @update:value="(value) => {teh.updateMode(node, value)}"
-                            :disabled="readonly"
                         />
                         <p>{{ i18n.text.Streamer.Event.Add.SC.Content[0] }}</p>
-                        <n-input-number :value="node.count" :show-button="false" @update:value="(value) => {teh.updateCount(node, value)}" :disabled="readonly"><template #prefix>￥</template></n-input-number>
+                        <n-input-number :value="node.count" :show-button="false" @update:value="(value) => {teh.updateCount(node, value)}"><template #prefix>￥</template></n-input-number>
                         <p>{{ i18n.text.Streamer.Event.Add.SC.Content[1] }}</p>
                     </div>
                 </n-gi>
@@ -54,9 +52,9 @@
                 <n-gi :span="4" v-if="isMember">
                     <div class="cond-value">
                         <n-space>
-                            <n-checkbox :checked="node.member1" @update:checked="(value) => {teh.updateMember1(node, value)}" :disabled="readonly">{{ i18n.text.Streamer.Data.Member[0] }}</n-checkbox>
-                            <n-checkbox :checked="node.member2" @update:checked="(value) => {teh.updateMember2(node, value)}" :disabled="readonly">{{ i18n.text.Streamer.Data.Member[1] }}</n-checkbox>
-                            <n-checkbox :checked="node.member3" @update:checked="(value) => {teh.updateMember3(node, value)}" :disabled="readonly">{{ i18n.text.Streamer.Data.Member[2] }}</n-checkbox>
+                            <n-checkbox :checked="node.member1" @update:checked="(value) => {teh.updateMember1(node, value)}">{{ i18n.text.Streamer.Data.Member[0] }}</n-checkbox>
+                            <n-checkbox :checked="node.member2" @update:checked="(value) => {teh.updateMember2(node, value)}">{{ i18n.text.Streamer.Data.Member[1] }}</n-checkbox>
+                            <n-checkbox :checked="node.member3" @update:checked="(value) => {teh.updateMember3(node, value)}">{{ i18n.text.Streamer.Data.Member[2] }}</n-checkbox>
                         </n-space>
                     </div>
                 </n-gi>
@@ -67,16 +65,15 @@
                             :value="node.mode"
                             :options="memberModeOpts"
                             @update:value="(value) => {teh.updateMode(node, value)}"
-                            :disabled="readonly"
                         />
                         <p>{{ i18n.text.Streamer.Event.Add.Member.Content[0] }}</p>
-                        <n-input-number :value="node.count" :show-button="false" @update:value="(value) => {teh.updateCount(node, value)}" :disabled="readonly"/>
+                        <n-input-number :value="node.count" :show-button="false" @update:value="(value) => {teh.updateCount(node, value)}"/>
                         <p>{{ i18n.text.Streamer.Event.Add.Member.Content[1] }}</p>
                     </div>
                 </n-gi>
                 <n-gi v-if="isGift"><div>{{ i18n.text.Streamer.Menu[3] }}</div></n-gi>
                 <n-gi :span="4" v-if="isGift">
-                    <div class="cond-value cond-sc"><n-select :value="node.giftID" :options="gifts" @update:value="(value) => {teh.updateGift(node, value)}" :disabled="readonly"/></div>
+                    <div class="cond-value cond-sc"><n-select :value="node.giftID" :options="gifts" @update:value="(value) => {teh.updateGift(node, value)}"/></div>
                 </n-gi>
                 <n-gi v-if="isGift"><div>{{ i18n.text.Streamer.Event.Add.Gift.Count }}</div></n-gi>
                 <n-gi :span="4" v-if="isGift">
@@ -85,10 +82,9 @@
                             :value="node.mode"
                             :options="memberModeOpts"
                             @update:value="(value) => {teh.updateMode(node, value)}"
-                            :disabled="readonly"
                         />
                         <p>{{ i18n.text.Streamer.Event.Add.Gift.Content[0] }}</p>
-                        <n-input-number :value="node.count" :show-button="false" @update:value="(value) => {teh.updateCount(node, value)}" :disabled="readonly"/>
+                        <n-input-number :value="node.count" :show-button="false" @update:value="(value) => {teh.updateCount(node, value)}"/>
                         <p>{{ i18n.text.Streamer.Event.Add.Gift.Content[1] }}</p>
                     </div>
                 </n-gi>
