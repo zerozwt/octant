@@ -57,7 +57,7 @@ func (dal RewardEventDAL) Page(ctx *swe.Context, roomID int64, offset, limit int
 	}
 
 	tx = tx.Offset(offset).Limit(limit)
-	tx = tx.Select("id", "name", "status").Order("create_time desc")
+	tx = tx.Select("id", "name", "status", "content", "hidden").Order("create_time desc")
 	err = tx.Find(&ret).Error
 	return count, ret, err
 }
@@ -88,8 +88,8 @@ func (dal RewardEventDAL) PutUsers(ctx *swe.Context, users []RewardUser) error {
 }
 
 func (dal RewardEventDAL) UpdateEventInfo(ctx *swe.Context, id, roomID int64, name, content string, hidden int) error {
-	return getInstance(ctx).Exec("update t_event set name = ? and content = ? where id = ? and room_id = ? and hidden = ?",
-		name, content, id, roomID, hidden).Error
+	return getInstance(ctx).Exec("update t_event set name = ?, content = ?, hidden = ? where id = ? and room_id = ?",
+		name, content, hidden, id, roomID).Error
 }
 
 func (dal RewardEventDAL) GetByRoomID(ctx *swe.Context, id, roomID int64) (*RewardEvent, error) {

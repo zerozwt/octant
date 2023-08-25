@@ -85,9 +85,9 @@ func (f *eventFilterSC) OK(user *UserData, strip *UserStrip) bool {
 		}
 		if f.total {
 			value += user.SC[idx].Price
-			ss.gift[idx] = true
+			ss.sc[idx] = true
 		} else if user.SC[idx].Price >= f.count {
-			ss.gift[idx] = true
+			ss.sc[idx] = true
 			value = user.SC[idx].Price
 		}
 	}
@@ -117,10 +117,10 @@ func (f *eventFilterMember) OK(user *UserData, strip *UserStrip) bool {
 			continue
 		}
 		if f.total {
-			ss.gift[idx] = true
+			ss.member[idx] = true
 			value += int64(user.Member[idx].Count)
 		} else if int64(user.Member[idx].Count) >= f.count {
-			ss.gift[idx] = true
+			ss.member[idx] = true
 			value = int64(user.Member[idx].Count)
 		}
 	}

@@ -76,7 +76,7 @@ let onEditEvent = (row) => {
 
 let onUpdateEvent = () => {
     editing.value = true
-    API.post("/api/event/modify", {id: currEvent.id, name: currEvent.name, reward: currEvent.content, hidden: currEvent.hidden ? 1 : 0}).then(rps => {
+    API.post("/api/event/modify", {id: currEvent.id, name: currEvent.name, reward: currEvent.content, hidden: currEvent.hidden ? 1 : 0}).then(rsp => {
         let data = rsp.data
         if (data.code != 0) {
             message.error(`[${data.code}] ERROR: ${data.msg}`)
